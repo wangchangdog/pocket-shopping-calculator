@@ -1,35 +1,44 @@
-import { useState } from 'react'
-import './App.css'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { AddItemForm } from './components/AddItemForm';
+import { ItemList } from './components/ItemList';
+import { TaxModeToggle } from './components/TaxModeToggle';
+import { TotalDisplay } from './components/TotalDisplay';
+import { ShoppingProvider } from './context/ShoppingContext';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <ShoppingProvider>
+      <div className="min-h-screen bg-gray-100">
+        <div className="max-w-md mx-auto px-4 py-6">
+          {/* ヘッダー */}
+          <header className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+              ポケット会計
+            </h1>
+            <p className="text-sm text-gray-600">
+              買い物中の合計金額を簡単計算
+            </p>
+          </header>
+
+          {/* 合計金額表示 */}
+          <TotalDisplay />
+
+          {/* 税設定 */}
+          <TaxModeToggle />
+
+          {/* 商品追加フォーム */}
+          <AddItemForm />
+
+          {/* 商品一覧 */}
+          <ItemList />
+
+          {/* フッター */}
+          <footer className="mt-8 text-center text-xs text-gray-500">
+            <p>データはお使いのデバイスにのみ保存されます</p>
+          </footer>
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </ShoppingProvider>
+  );
 }
 
-export default App
+export default App;
