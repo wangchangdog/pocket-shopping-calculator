@@ -1,8 +1,8 @@
-import { AddItemForm } from './components/AddItemForm';
-import { ItemList } from './components/ItemList';
-import { TaxModeToggle } from './components/TaxModeToggle';
-import { TotalDisplay } from './components/TotalDisplay';
-import { ShoppingProvider } from './context/ShoppingContext';
+import { AddItemForm } from "./components/AddItemForm";
+import { ItemList } from "./components/ItemList";
+import { TaxModeToggle } from "./components/TaxModeToggle";
+import { TotalDisplay } from "./components/TotalDisplay";
+import { ShoppingProvider } from "./context/ShoppingContext";
 
 function App() {
   return (

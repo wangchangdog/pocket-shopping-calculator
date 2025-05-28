@@ -1,6 +1,10 @@
-import React from 'react';
-import { useShoppingContext } from '../context/ShoppingContext';
-import { calculateSubtotal, calculateTotalTax, formatPrice } from '../utils/calculations';
+import type React from "react";
+import { useShoppingContext } from "../context/ShoppingContext";
+import {
+  calculateSubtotal,
+  calculateTotalTax,
+  formatPrice,
+} from "../utils/calculations";
 
 export const TotalDisplay: React.FC = () => {
   const { session } = useShoppingContext();
@@ -24,7 +28,7 @@ export const TotalDisplay: React.FC = () => {
             <span>{itemCount}点</span>
           </div>
 
-          {taxMode === 'excluded' ? (
+          {taxMode === "excluded" ? (
             <>
               <div className="flex justify-between">
                 <span>小計（税抜）:</span>
@@ -51,4 +55,4 @@ export const TotalDisplay: React.FC = () => {
       </div>
     </div>
   );
-}; 
+};

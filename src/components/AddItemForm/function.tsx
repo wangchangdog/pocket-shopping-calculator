@@ -1,63 +1,28 @@
-import React, { useState } from 'react';
-import { useShoppingContext } from '../context/ShoppingContext';
+import type React from "react";
+import type { UseAddItemFormReturn } from "./useAddItemForm";
 
-export const AddItemForm: React.FC = () => {
-  const { dispatch } = useShoppingContext();
-  const [isOpen, setIsOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    quantity: '1',
-  });
+interface AddItemFormFunctionProps {
+  hook: UseAddItemFormReturn;
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const price = parseFloat(formData.price);
-    const quantity = parseInt(formData.quantity);
-
-    if (isNaN(price) || price <= 0) {
-      alert('正しい価格を入力してください');
-      return;
-    }
-
-    if (isNaN(quantity) || quantity <= 0) {
-      alert('正しい数量を入力してください');
-      return;
-    }
-
-    dispatch({
-      type: 'ADD_ITEM',
-      payload: {
-        name: formData.name || '商品',
-        price,
-        quantity,
-      },
-    });
-
-    // フォームをリセット
-    setFormData({
-      name: '',
-      price: '',
-      quantity: '1',
-    });
-    setIsOpen(false);
-  };
-
-  const handleCancel = () => {
-    setFormData({
-      name: '',
-      price: '',
-      quantity: '1',
-    });
-    setIsOpen(false);
-  };
+export const AddItemFormFunction: React.FC<AddItemFormFunctionProps> = ({
+  hook,
+}) => {
+  const {
+    isOpen,
+    formData,
+    setFormData,
+    handleSubmit,
+    handleCancel,
+    handleOpenForm,
+  } = hook;
 
   if (!isOpen) {
     return (
       <div className="mb-6">
         <button
-          onClick={() => setIsOpen(true)}
+          type="button"
+          onClick={handleOpenForm}
           className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center space-x-2"
         >
           <span className="text-xl">+</span>
@@ -73,7 +38,10 @@ export const AddItemForm: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="itemName" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="itemName"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             商品名（任意）
           </label>
           <input
@@ -87,7 +55,10 @@ export const AddItemForm: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="itemPrice" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="itemPrice"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             価格 *
           </label>
           <div className="relative">
@@ -96,28 +67,35 @@ export const AddItemForm: React.FC = () => {
               type="number"
               id="itemPrice"
               value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, price: e.target.value })
+              }
               placeholder="0"
               min="0"
               step="1"
-              required
+              required={true}
               className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="itemQuantity" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="itemQuantity"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             数量
           </label>
           <input
             type="number"
             id="itemQuantity"
             value={formData.quantity}
-            onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, quantity: e.target.value })
+            }
             min="1"
             step="1"
-            required
+            required={true}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>

@@ -1,8 +1,8 @@
-import type { AppSettings, ShoppingSession } from '../types';
+import type { AppSettings, ShoppingSession } from "../types";
 
 const STORAGE_KEYS = {
-  SESSION: 'pocket-shopping-session',
-  SETTINGS: 'pocket-shopping-settings',
+  session: "pocket-shopping-session",
+  settings: "pocket-shopping-settings",
 } as const;
 
 /**
@@ -10,9 +10,9 @@ const STORAGE_KEYS = {
  */
 export const saveSession = (session: ShoppingSession): void => {
   try {
-    localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
+    localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(session));
   } catch (error) {
-    console.error('セッションデータの保存に失敗しました:', error);
+    console.error("セッションデータの保存に失敗しました:", error);
   }
 };
 
@@ -21,10 +21,10 @@ export const saveSession = (session: ShoppingSession): void => {
  */
 export const loadSession = (): ShoppingSession | null => {
   try {
-    const data = localStorage.getItem(STORAGE_KEYS.SESSION);
+    const data = localStorage.getItem(STORAGE_KEYS.session);
     return data ? JSON.parse(data) : null;
   } catch (error) {
-    console.error('セッションデータの読み込みに失敗しました:', error);
+    console.error("セッションデータの読み込みに失敗しました:", error);
     return null;
   }
 };
@@ -34,9 +34,9 @@ export const loadSession = (): ShoppingSession | null => {
  */
 export const clearSession = (): void => {
   try {
-    localStorage.removeItem(STORAGE_KEYS.SESSION);
+    localStorage.removeItem(STORAGE_KEYS.session);
   } catch (error) {
-    console.error('セッションデータのクリアに失敗しました:', error);
+    console.error("セッションデータのクリアに失敗しました:", error);
   }
 };
 
@@ -45,9 +45,9 @@ export const clearSession = (): void => {
  */
 export const saveSettings = (settings: AppSettings): void => {
   try {
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
   } catch (error) {
-    console.error('設定データの保存に失敗しました:', error);
+    console.error("設定データの保存に失敗しました:", error);
   }
 };
 
@@ -56,10 +56,10 @@ export const saveSettings = (settings: AppSettings): void => {
  */
 export const loadSettings = (): AppSettings | null => {
   try {
-    const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+    const data = localStorage.getItem(STORAGE_KEYS.settings);
     return data ? JSON.parse(data) : null;
   } catch (error) {
-    console.error('設定データの読み込みに失敗しました:', error);
+    console.error("設定データの読み込みに失敗しました:", error);
     return null;
   }
 };
@@ -69,17 +69,19 @@ export const loadSettings = (): AppSettings | null => {
  */
 export const getDefaultSettings = (): AppSettings => ({
   defaultTaxRate: 10,
-  defaultTaxMode: 'included',
+  defaultTaxMode: "included",
   enableHistory: false,
 });
 
 /**
  * デフォルトセッションを作成
  */
-export const createDefaultSession = (settings?: AppSettings): ShoppingSession => {
+export const createDefaultSession = (
+  settings?: AppSettings
+): ShoppingSession => {
   const defaultSettings = settings || getDefaultSettings();
   const now = new Date().toISOString();
-  
+
   return {
     sessionId: `session-${Date.now()}`,
     taxMode: defaultSettings.defaultTaxMode,
@@ -89,4 +91,4 @@ export const createDefaultSession = (settings?: AppSettings): ShoppingSession =>
     createdAt: now,
     updatedAt: now,
   };
-}; 
+};

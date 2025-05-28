@@ -1,20 +1,37 @@
-import React, { createContext, useContext, useEffect, useReducer, type ReactNode } from 'react';
-import type { ShoppingAction, ShoppingItem, ShoppingSession } from '../types';
-import { calculateTotal } from '../utils/calculations';
-import { createDefaultSession, loadSession, loadSettings, saveSession } from '../utils/storage';
+import type React from "react";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+} from "react";
+import type { ShoppingAction, ShoppingItem, ShoppingSession } from "../types";
+import { calculateTotal } from "../utils/calculations";
+import {
+  createDefaultSession,
+  loadSession,
+  loadSettings,
+  saveSession,
+} from "../utils/storage";
 
 interface ShoppingContextType {
   session: ShoppingSession;
   dispatch: React.Dispatch<ShoppingAction>;
 }
 
-const ShoppingContext = createContext<ShoppingContextType | undefined>(undefined);
+const ShoppingContext = createContext<ShoppingContextType | undefined>(
+  undefined
+);
 
-const shoppingReducer = (state: ShoppingSession, action: ShoppingAction): ShoppingSession => {
+const shoppingReducer = (
+  state: ShoppingSession,
+  action: ShoppingAction
+): ShoppingSession => {
   const now = new Date().toISOString();
 
   switch (action.type) {
-    case 'ADD_ITEM': {
+    case "ADD_ITEM": {
       const newItem: ShoppingItem = {
         id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         ...action.payload,
@@ -22,7 +39,11 @@ const shoppingReducer = (state: ShoppingSession, action: ShoppingAction): Shoppi
       };
 
       const newItems = [...state.items, newItem];
-      const totalAmount = calculateTotal(newItems, state.taxMode, state.taxRate);
+      const totalAmount = calculateTotal(
+        newItems,
+        state.taxMode,
+        state.taxRate
+      );
 
       return {
         ...state,
@@ -32,9 +53,13 @@ const shoppingReducer = (state: ShoppingSession, action: ShoppingAction): Shoppi
       };
     }
 
-    case 'REMOVE_ITEM': {
-      const newItems = state.items.filter(item => item.id !== action.payload);
-      const totalAmount = calculateTotal(newItems, state.taxMode, state.taxRate);
+    case "REMOVE_ITEM": {
+      const newItems = state.items.filter((item) => item.id !== action.payload);
+      const totalAmount = calculateTotal(
+        newItems,
+        state.taxMode,
+        state.taxRate
+      );
 
       return {
         ...state,
@@ -44,13 +69,17 @@ const shoppingReducer = (state: ShoppingSession, action: ShoppingAction): Shoppi
       };
     }
 
-    case 'UPDATE_QUANTITY': {
-      const newItems = state.items.map(item =>
+    case "UPDATE_QUANTITY": {
+      const newItems = state.items.map((item) =>
         item.id === action.payload.id
           ? { ...item, quantity: action.payload.quantity }
           : item
       );
-      const totalAmount = calculateTotal(newItems, state.taxMode, state.taxRate);
+      const totalAmount = calculateTotal(
+        newItems,
+        state.taxMode,
+        state.taxRate
+      );
 
       return {
         ...state,
@@ -60,8 +89,12 @@ const shoppingReducer = (state: ShoppingSession, action: ShoppingAction): Shoppi
       };
     }
 
-    case 'SET_TAX_MODE': {
-      const totalAmount = calculateTotal(state.items, action.payload, state.taxRate);
+    case "SET_TAX_MODE": {
+      const totalAmount = calculateTotal(
+        state.items,
+        action.payload,
+        state.taxRate
+      );
 
       return {
         ...state,
@@ -71,8 +104,12 @@ const shoppingReducer = (state: ShoppingSession, action: ShoppingAction): Shoppi
       };
     }
 
-    case 'SET_TAX_RATE': {
-      const totalAmount = calculateTotal(state.items, state.taxMode, action.payload);
+    case "SET_TAX_RATE": {
+      const totalAmount = calculateTotal(
+        state.items,
+        state.taxMode,
+        action.payload
+      );
 
       return {
         ...state,
@@ -82,12 +119,12 @@ const shoppingReducer = (state: ShoppingSession, action: ShoppingAction): Shoppi
       };
     }
 
-    case 'CLEAR_SESSION': {
+    case "CLEAR_SESSION": {
       const settings = loadSettings();
       return createDefaultSession(settings || undefined);
     }
 
-    case 'LOAD_SESSION': {
+    case "LOAD_SESSION": {
       return action.payload;
     }
 
@@ -100,14 +137,19 @@ interface ShoppingProviderProps {
   children: ReactNode;
 }
 
-export const ShoppingProvider: React.FC<ShoppingProviderProps> = ({ children }) => {
-  const [session, dispatch] = useReducer(shoppingReducer, createDefaultSession());
+export const ShoppingProvider: React.FC<ShoppingProviderProps> = ({
+  children,
+}) => {
+  const [session, dispatch] = useReducer(
+    shoppingReducer,
+    createDefaultSession()
+  );
 
   // 初期化時にローカルストレージからデータを読み込み
   useEffect(() => {
     const savedSession = loadSession();
     if (savedSession) {
-      dispatch({ type: 'LOAD_SESSION', payload: savedSession });
+      dispatch({ type: "LOAD_SESSION", payload: savedSession });
     }
   }, []);
 
@@ -126,7 +168,9 @@ export const ShoppingProvider: React.FC<ShoppingProviderProps> = ({ children }) 
 export const useShoppingContext = (): ShoppingContextType => {
   const context = useContext(ShoppingContext);
   if (context === undefined) {
-    throw new Error('useShoppingContext must be used within a ShoppingProvider');
+    throw new Error(
+      "useShoppingContext must be used within a ShoppingProvider"
+    );
   }
   return context;
-}; 
+};

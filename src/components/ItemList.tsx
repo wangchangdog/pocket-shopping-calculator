@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { useShoppingContext } from '../context/ShoppingContext';
-import type { ShoppingItem } from '../types';
-import { formatPrice } from '../utils/calculations';
+import type React from "react";
+import { useState } from "react";
+import { useShoppingContext } from "../context/ShoppingContext";
+import type { ShoppingItem } from "../types";
+import { formatPrice } from "../utils/calculations";
 
 interface ItemRowProps {
   item: ShoppingItem;
@@ -14,7 +15,7 @@ const ItemRow: React.FC<ItemRowProps> = ({ item }) => {
 
   const handleDelete = () => {
     if (window.confirm(`「${item.name}」を削除しますか？`)) {
-      dispatch({ type: 'REMOVE_ITEM', payload: item.id });
+      dispatch({ type: "REMOVE_ITEM", payload: item.id });
     }
   };
 
@@ -24,14 +25,14 @@ const ItemRow: React.FC<ItemRowProps> = ({ item }) => {
   };
 
   const handleQuantitySubmit = () => {
-    const newQuantity = parseInt(editQuantity);
-    if (isNaN(newQuantity) || newQuantity <= 0) {
-      alert('正しい数量を入力してください');
+    const newQuantity = Number.parseInt(editQuantity);
+    if (Number.isNaN(newQuantity) || newQuantity <= 0) {
+      alert("正しい数量を入力してください");
       return;
     }
 
     dispatch({
-      type: 'UPDATE_QUANTITY',
+      type: "UPDATE_QUANTITY",
       payload: { id: item.id, quantity: newQuantity },
     });
     setIsEditing(false);
@@ -62,15 +63,16 @@ const ItemRow: React.FC<ItemRowProps> = ({ item }) => {
                   onChange={(e) => setEditQuantity(e.target.value)}
                   min="1"
                   className="w-16 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  autoFocus
                 />
                 <button
+                  type="button"
                   onClick={handleQuantitySubmit}
                   className="text-blue-600 hover:text-blue-800 text-xs"
                 >
                   ✓
                 </button>
                 <button
+                  type="button"
                   onClick={handleQuantityCancel}
                   className="text-gray-600 hover:text-gray-800 text-xs"
                 >
@@ -79,6 +81,7 @@ const ItemRow: React.FC<ItemRowProps> = ({ item }) => {
               </div>
             ) : (
               <button
+                type="button"
                 onClick={handleQuantityEdit}
                 className="text-blue-600 hover:text-blue-800 underline"
               >
@@ -95,12 +98,25 @@ const ItemRow: React.FC<ItemRowProps> = ({ item }) => {
             </div>
           </div>
           <button
+            type="button"
             onClick={handleDelete}
             className="text-red-500 hover:text-red-700 p-1"
             title="削除"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-label="削除"
+            >
+              <title>削除</title>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
             </svg>
           </button>
         </div>
@@ -114,10 +130,12 @@ export const ItemList: React.FC = () => {
   const { items } = session;
 
   const handleClearAll = () => {
-    if (items.length === 0) return;
+    if (items.length === 0) {
+      return;
+    }
 
-    if (window.confirm('すべての商品を削除しますか？')) {
-      dispatch({ type: 'CLEAR_SESSION' });
+    if (window.confirm("すべての商品を削除しますか？")) {
+      dispatch({ type: "CLEAR_SESSION" });
     }
   };
 
@@ -125,8 +143,20 @@ export const ItemList: React.FC = () => {
     return (
       <div className="bg-gray-50 rounded-lg p-8 text-center">
         <div className="text-gray-400 mb-2">
-          <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          <svg
+            className="w-12 h-12 mx-auto"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-label="空のカゴ"
+          >
+            <title>空のカゴ</title>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+            />
           </svg>
         </div>
         <p className="text-gray-500 text-sm">まだ商品が追加されていません</p>
@@ -141,6 +171,7 @@ export const ItemList: React.FC = () => {
           商品一覧 ({items.length}件)
         </h3>
         <button
+          type="button"
           onClick={handleClearAll}
           className="text-sm text-red-600 hover:text-red-800 underline"
         >
@@ -155,4 +186,4 @@ export const ItemList: React.FC = () => {
       </div>
     </div>
   );
-}; 
+};

@@ -1,13 +1,13 @@
-import React from 'react';
-import { useShoppingContext } from '../context/ShoppingContext';
-import type { TaxMode } from '../types';
+import type React from "react";
+import { useShoppingContext } from "../context/ShoppingContext";
+import type { TaxMode } from "../types";
 
 export const TaxModeToggle: React.FC = () => {
   const { session, dispatch } = useShoppingContext();
   const { taxMode, taxRate } = session;
 
   const handleTaxModeChange = (mode: TaxMode) => {
-    dispatch({ type: 'SET_TAX_MODE', payload: mode });
+    dispatch({ type: "SET_TAX_MODE", payload: mode });
   };
 
   return (
@@ -19,24 +19,28 @@ export const TaxModeToggle: React.FC = () => {
 
       <div className="flex bg-gray-100 rounded-lg p-1">
         <button
-          onClick={() => handleTaxModeChange('included')}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${taxMode === 'included'
-            ? 'bg-blue-500 text-white shadow-sm'
-            : 'text-gray-600 hover:text-gray-800'
-            }`}
+          type="button"
+          onClick={() => handleTaxModeChange("included")}
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            taxMode === "included"
+              ? "bg-blue-500 text-white shadow-sm"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
         >
           税込
         </button>
         <button
-          onClick={() => handleTaxModeChange('excluded')}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${taxMode === 'excluded'
-            ? 'bg-blue-500 text-white shadow-sm'
-            : 'text-gray-600 hover:text-gray-800'
-            }`}
+          type="button"
+          onClick={() => handleTaxModeChange("excluded")}
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            taxMode === "excluded"
+              ? "bg-blue-500 text-white shadow-sm"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
         >
           税抜
         </button>
       </div>
     </div>
   );
-}; 
+};

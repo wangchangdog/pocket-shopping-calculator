@@ -8,7 +8,7 @@ export interface ShoppingItem {
 }
 
 // 税込/税抜モード
-export type TaxMode = 'included' | 'excluded';
+export type TaxMode = "included" | "excluded";
 
 // 買い物セッション
 export interface ShoppingSession {
@@ -30,10 +30,10 @@ export interface AppSettings {
 
 // アクション型
 export type ShoppingAction =
-  | { type: 'ADD_ITEM'; payload: Omit<ShoppingItem, 'id' | 'addedAt'> }
-  | { type: 'REMOVE_ITEM'; payload: string }
-  | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
-  | { type: 'SET_TAX_MODE'; payload: TaxMode }
-  | { type: 'SET_TAX_RATE'; payload: number }
-  | { type: 'CLEAR_SESSION' }
-  | { type: 'LOAD_SESSION'; payload: ShoppingSession }; 
+  | { type: "ADD_ITEM"; payload: Omit<ShoppingItem, "id" | "addedAt"> }
+  | { type: "REMOVE_ITEM"; payload: string }
+  | { type: "UPDATE_QUANTITY"; payload: { id: string; quantity: number } }
+  | { type: "SET_TAX_MODE"; payload: TaxMode }
+  | { type: "SET_TAX_RATE"; payload: number }
+  | { type: "CLEAR_SESSION" }
+  | { type: "LOAD_SESSION"; payload: ShoppingSession };
