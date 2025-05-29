@@ -1,19 +1,19 @@
 import type React from "react";
+import type { ReactNode } from "react";
 import {
-  type ReactNode,
   createContext,
   useContext,
   useEffect,
   useReducer,
 } from "react";
-import type { ShoppingAction, ShoppingItem, ShoppingSession } from "../types";
-import { calculateTotal } from "../utils/calculations";
+import type { ShoppingAction, ShoppingItem, ShoppingSession } from "../../../types";
+import { calculateTotal } from "../../utils/calculations";
 import {
   createDefaultSession,
   loadSession,
   loadSettings,
-  saveSession,
-} from "../utils/storage";
+  saveSession
+} from "../../utils/storage";
 
 interface ShoppingContextType {
   session: ShoppingSession;
@@ -140,10 +140,9 @@ interface ShoppingProviderProps {
 export const ShoppingProvider: React.FC<ShoppingProviderProps> = ({
   children,
 }) => {
-  const [session, dispatch] = useReducer(
-    shoppingReducer,
-    createDefaultSession()
-  );
+  const initialSession = createDefaultSession();
+
+  const [session, dispatch] = useReducer(shoppingReducer, initialSession);
 
   // 初期化時にローカルストレージからデータを読み込み
   useEffect(() => {

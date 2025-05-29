@@ -37,3 +37,34 @@ export type ShoppingAction =
   | { type: "SET_TAX_RATE"; payload: number }
   | { type: "CLEAR_SESSION" }
   | { type: "LOAD_SESSION"; payload: ShoppingSession };
+
+// OCR関連の型定義
+export interface OCRResult {
+  text: string;
+  confidence: number;
+  bbox: {
+    x0: number;
+    y0: number;
+    x1: number;
+    y1: number;
+  };
+}
+
+export interface OCRProcessResult {
+  recognizedText: string;
+  confidence: number;
+  detectedPrice?: number;
+  suggestions: string[];
+}
+
+export interface CameraSettings {
+  facingMode: 'user' | 'environment';
+  width: number;
+  height: number;
+}
+
+export interface OCRSettings {
+  language: string;
+  engineMode: any;
+  pageSegMode: any;
+}

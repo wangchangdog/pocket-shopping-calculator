@@ -1,4 +1,4 @@
-import type { ShoppingItem, TaxMode } from "../types";
+import type { ShoppingItem, TaxMode } from "../../types";
 
 /**
  * 税込価格を計算

@@ -1,4 +1,4 @@
-import type { AppSettings, ShoppingSession } from "../types";
+import type { AppSettings, ShoppingSession } from "../../types";
 
 const STORAGE_KEYS = {
   session: "pocket-shopping-session",

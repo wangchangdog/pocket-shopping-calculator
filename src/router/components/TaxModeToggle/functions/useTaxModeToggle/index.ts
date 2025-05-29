@@ -1,5 +1,5 @@
-import { useShoppingContext } from "@/context/ShoppingContext";
-import type { TaxMode } from "@/types";
+import { useShoppingContext } from "../../../../../shared/components/context/ShoppingContext";
+import type { TaxMode } from "../../../../../types";
 
 export interface UseTaxModeToggleReturn {
   taxMode: TaxMode;

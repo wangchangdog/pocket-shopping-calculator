@@ -1,54 +1,177 @@
-# React + TypeScript + Vite
+# ポケット会計
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+買い物中にカゴの中身の合計金額をリアルタイムで把握できるスマートフォン向けWebアプリケーション（PWA）です。
 
-Currently, two official plugins are available:
+## 🚀 主な機能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### ✅ 基本機能（Phase 1完了）
+- **商品手動入力**: 価格、商品名、数量の入力
+- **税込/税抜計算**: 消費税率の切り替え対応
+- **リアルタイム合計**: 商品追加時の即座な合計金額更新
+- **商品管理**: 一覧表示、個別削除、数量編集
+- **データ永続化**: ローカルストレージによる自動保存・復元
 
-## Expanding the ESLint configuration
+### 🆕 OCR機能（Phase 2完了）
+- **価格自動認識**: カメラで値札を撮影して価格を自動抽出
+- **画像アップロード**: ファイル選択による価格認識
+- **日本円対応**: ¥1,000、1000円等の多様な価格表記に対応
+- **信頼度ランキング**: 複数の価格候補を信頼度順で表示
+- **画像前処理**: コントラスト向上・グレースケール変換で認識精度向上
+- **カメラ切り替え**: 前面/背面カメラの切り替え対応
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🛠 技術スタック
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- **フレームワーク**: React 18 + TypeScript
+- **ビルドツール**: Vite
+- **スタイリング**: Tailwind CSS
+- **状態管理**: React Context API + useReducer
+- **データ保存**: localStorage
+- **OCRエンジン**: Tesseract.js v6.0.1
+- **カメラAPI**: MediaDevices API
+- **アイコン**: Lucide React
+
+## 📱 対応環境
+
+- **ブラウザ**: 
+  - iOS Safari 12+
+  - Android Chrome 70+
+  - デスクトップブラウザ（Chrome, Firefox, Safari, Edge）
+- **画面サイズ**: 320px〜428px幅対応（スマートフォン最適化）
+- **カメラ**: HTTPS環境でのみ利用可能
+
+## 🚀 セットアップ
+
+### 前提条件
+- Node.js 14以上
+- npm または yarn
+
+### インストール
+
+```bash
+# リポジトリをクローン
+git clone <repository-url>
+cd pocket-shopping-calculator
+
+# 依存関係をインストール
+npm install
+
+# 開発サーバーを起動
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### ビルド
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# 本番用ビルド
+npm run build
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+# ビルド結果をプレビュー
+npm run preview
 ```
+
+## 📖 使い方
+
+### 基本的な使い方
+
+1. **商品追加**: 「商品を追加」ボタンから手動で価格・商品名・数量を入力
+2. **税設定**: 税込/税抜を切り替えて計算方式を選択
+3. **合計確認**: リアルタイムで更新される合計金額を確認
+4. **商品管理**: 追加した商品の削除や数量変更
+
+### OCR機能の使い方
+
+1. **価格スキャン**: 「価格をスキャン」ボタンをタップ
+2. **撮影**: カメラで値札を撮影、または画像ファイルを選択
+3. **認識結果確認**: 検出された価格と信頼度を確認
+4. **価格確定**: 「この価格で追加」で商品リストに追加
+
+### OCR使用時のコツ
+
+- **明るい場所**で撮影する
+- **値札に正面から**カメラを向ける
+- **価格部分を画面中央**に配置する
+- **手ブレを避けて**しっかりと固定する
+
+## 🏗 アーキテクチャ
+
+### ディレクトリ構造
+
+```
+src/
+├── components/          # 再利用可能なコンポーネント
+├── context/            # React Context（状態管理）
+├── router/
+│   └── components/     # ページ固有のコンポーネント
+│       ├── AddItemForm/    # 商品追加フォーム
+│       ├── ItemList/       # 商品一覧
+│       ├── OCRCamera/      # OCRカメラ機能
+│       ├── TaxModeToggle/  # 税設定切り替え
+│       └── TotalDisplay/   # 合計金額表示
+├── types/              # TypeScript型定義
+└── utils/              # ユーティリティ関数
+    ├── calculations.ts # 税計算ロジック
+    ├── storage.ts      # ローカルストレージ管理
+    ├── ocr.ts          # OCR処理
+    └── camera.ts       # カメラ機能
+```
+
+### データフロー
+
+1. **ユーザー操作** → UI コンポーネント
+2. **状態更新** → React Context（useReducer）
+3. **データ永続化** → localStorage
+4. **OCR処理** → Tesseract.js Worker
+5. **カメラ操作** → MediaDevices API
+
+## 🔧 開発情報
+
+### 利用可能なスクリプト
+
+```bash
+npm run dev          # 開発サーバー起動
+npm run build        # 本番ビルド
+npm run preview      # ビルド結果プレビュー
+npm run lint         # ESLint実行
+```
+
+### OCR設定
+
+OCRエンジンの設定は `src/utils/ocr.ts` で調整可能：
+
+```typescript
+const DEFAULT_OCR_SETTINGS = {
+  language: 'eng',                    // 認識言語
+  engineMode: OEM.LSTM_ONLY,         // エンジンモード
+  pageSegMode: PSM.SPARSE_TEXT,      // ページセグメンテーション
+};
+```
+
+### 価格認識パターン
+
+以下の価格パターンに対応：
+
+- `¥1,000` / `¥1000.00`
+- `1000円` / `1,000.00円`
+- `1000¥`
+- `1000` / `1,000.00`
+
+## 🚧 今後の予定（Phase 3）
+
+- [ ] **PWA対応**: Service Worker実装
+- [ ] **オフライン機能**: キャッシュ戦略
+- [ ] **アプリマニフェスト**: ホーム画面追加対応
+- [ ] **プッシュ通知**: 買い物リマインダー
+- [ ] **履歴機能**: 過去の買い物記録
+
+## 📄 ライセンス
+
+MIT License
+
+## 🤝 コントリビューション
+
+プルリクエストやイシューの報告を歓迎します。
+
+---
+
+**開発状況**: Phase 2（OCR機能）完了 ✅  
+**次のマイルストーン**: Phase 3（PWA対応）

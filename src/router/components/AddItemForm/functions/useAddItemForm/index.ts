@@ -1,6 +1,6 @@
-import { useShoppingContext } from "@/context/ShoppingContext";
 import type React from "react";
 import { useState } from "react";
+import { useShoppingContext } from "../../../../../shared/components/context/ShoppingContext";
 
 export interface FormData {
   name: string;

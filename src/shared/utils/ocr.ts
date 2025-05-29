@@ -1,0 +1,231 @@
+import { createWorker, OEM, PSM } from 'tesseract.js';
+import type { OCRProcessResult, OCRResult, OCRSettings } from '../../types';
+
+/**
+ * デフォルトのOCR設定
+ */
+const DEFAULT_OCR_SETTINGS: OCRSettings = {
+  language: 'eng',
+  engineMode: OEM.LSTM_ONLY,
+  pageSegMode: PSM.SPARSE_TEXT,
+};
+
+/**
+ * 価格パターンの正規表現
+ */
+const PRICE_PATTERNS = [
+  /¥\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/g,  // ¥1,000 or ¥1000.00
+  /(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*円/g,  // 1000円 or 1,000.00円
+  /(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*¥/g,   // 1000¥
+  /(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/g,       // 1000 or 1,000.00
+];
+
+/**
+ * Tesseract.jsワーカーのシングルトンインスタンス
+ */
+let ocrWorker: Awaited<ReturnType<typeof createWorker>> | null = null;
+
+/**
+ * OCRワーカーを初期化
+ */
+export async function initializeOCR(settings: Partial<OCRSettings> = {}): Promise<void> {
+  if (ocrWorker) {
+    return;
+  }
+
+  const config = { ...DEFAULT_OCR_SETTINGS, ...settings };
+  
+  try {
+    ocrWorker = await createWorker(config.language, config.engineMode, {
+      logger: (m) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[OCR]', m);
+        }
+      },
+    });
+
+    await ocrWorker.setParameters({
+      tessedit_pageseg_mode: PSM.SPARSE_TEXT,
+      tessedit_char_whitelist: '0123456789¥円,.',
+    });
+
+    console.log('OCR worker initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize OCR worker:', error);
+    throw new Error('OCR初期化に失敗しました');
+  }
+}
+
+/**
+ * OCRワーカーを終了
+ */
+export async function terminateOCR(): Promise<void> {
+  if (ocrWorker) {
+    await ocrWorker.terminate();
+    ocrWorker = null;
+    console.log('OCR worker terminated');
+  }
+}
+
+/**
+ * 画像から文字を認識
+ */
+export async function recognizeText(
+  imageSource: string | File | HTMLCanvasElement | HTMLImageElement
+): Promise<OCRResult[]> {
+  if (!ocrWorker) {
+    throw new Error('OCR worker is not initialized. Call initializeOCR() first.');
+  }
+
+  try {
+    const { data } = await ocrWorker.recognize(imageSource);
+    
+    // Tesseract.js v6では、data.textから全体テキストを取得
+    // 個別の単語情報は簡略化されているため、全体テキストを使用
+    const fullText = data.text || '';
+    
+    // 全体テキストから一つのOCRResultを作成
+    return [{
+      text: fullText,
+      confidence: data.confidence || 0,
+      bbox: {
+        x0: 0,
+        y0: 0,
+        x1: 0,
+        y1: 0,
+      },
+    }];
+  } catch (error) {
+    console.error('OCR recognition failed:', error);
+    throw new Error('文字認識に失敗しました');
+  }
+}
+
+/**
+ * 価格を抽出・解析
+ */
+export function extractPrices(text: string): number[] {
+  const prices: number[] = [];
+  
+  for (const pattern of PRICE_PATTERNS) {
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      const priceStr = match[1] || match[0];
+      const cleanPrice = priceStr.replace(/[¥円,\s]/g, '');
+      const price = parseFloat(cleanPrice);
+      
+      if (!isNaN(price) && price > 0 && price < 1000000) { // 0円〜100万円の範囲
+        prices.push(price);
+      }
+    }
+  }
+  
+  return [...new Set(prices)]; // 重複を除去
+}
+
+/**
+ * 価格候補を信頼度でソート
+ */
+export function rankPriceCandidates(
+  ocrResults: OCRResult[],
+  extractedPrices: number[]
+): Array<{ price: number; confidence: number; source: string }> {
+  const candidates: Array<{ price: number; confidence: number; source: string }> = [];
+  
+  // OCR結果から価格を抽出
+  for (const result of ocrResults) {
+    const prices = extractPrices(result.text);
+    for (const price of prices) {
+      candidates.push({
+        price,
+        confidence: result.confidence,
+        source: result.text,
+      });
+    }
+  }
+  
+  // 全体テキストからの価格も追加
+  for (const price of extractedPrices) {
+    const existingCandidate = candidates.find(c => c.price === price);
+    if (!existingCandidate) {
+      candidates.push({
+        price,
+        confidence: 50, // デフォルト信頼度
+        source: 'extracted',
+      });
+    }
+  }
+  
+  // 信頼度でソート
+  return candidates.sort((a, b) => b.confidence - a.confidence);
+}
+
+/**
+ * 画像から価格を認識・処理
+ */
+export async function processImageForPrice(
+  imageSource: string | File | HTMLCanvasElement | HTMLImageElement
+): Promise<OCRProcessResult> {
+  try {
+    // OCR実行
+    const ocrResults = await recognizeText(imageSource);
+    
+    // 全テキストを結合
+    const fullText = ocrResults.map(r => r.text).join(' ');
+    
+    // 価格を抽出
+    const extractedPrices = extractPrices(fullText);
+    
+    // 価格候補をランキング
+    const rankedCandidates = rankPriceCandidates(ocrResults, extractedPrices);
+    
+    // 最も信頼度の高い価格を選択
+    const bestCandidate = rankedCandidates[0];
+    
+    // 提案リストを作成（上位3つまで）
+    const suggestions = rankedCandidates
+      .slice(0, 3)
+      .map(c => `¥${c.price.toLocaleString()} (信頼度: ${c.confidence.toFixed(1)}%)`);
+    
+    return {
+      recognizedText: fullText,
+      confidence: bestCandidate?.confidence || 0,
+      detectedPrice: bestCandidate?.price,
+      suggestions,
+    };
+  } catch (error) {
+    console.error('Price processing failed:', error);
+    throw new Error('価格認識処理に失敗しました');
+  }
+}
+
+/**
+ * 画像の前処理（コントラスト向上など）
+ */
+export function preprocessImage(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('Canvas context not available');
+  }
+  
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  
+  // グレースケール変換とコントラスト向上
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+    
+    // コントラスト向上
+    const contrast = 1.5;
+    const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+    const enhancedGray = factor * (gray - 128) + 128;
+    
+    data[i] = enhancedGray;     // R
+    data[i + 1] = enhancedGray; // G
+    data[i + 2] = enhancedGray; // B
+    // data[i + 3] はアルファ値なのでそのまま
+  }
+  
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+} 

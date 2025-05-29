@@ -1,5 +1,5 @@
 import type React from "react";
-import { formatPrice } from "../../../utils/calculations";
+import { formatPrice } from "../../../shared/utils/calculations";
 import { useTotalDisplay } from "./functions/useTotalDisplay";
 
 export const TotalDisplay: React.FC = () => {

@@ -11,7 +11,7 @@ export const TaxModeToggle: React.FC = () => {
         <span className="text-xs text-gray-500">消費税率: {taxRate}%</span>
       </div>
 
-      <div className="flex bg-gray-100 rounded-lg p-1">
+      <div className="flex gap-4 rounded-lg p-1">
         <button
           type="button"
           onClick={() => handleTaxModeChange("included")}

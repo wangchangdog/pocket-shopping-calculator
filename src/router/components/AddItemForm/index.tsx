@@ -1,4 +1,7 @@
+import { Camera } from "lucide-react";
 import type React from "react";
+import { useState } from "react";
+import OCRCamera from "../../../shared/components/OCRCamera";
 import { useAddItemForm } from "./functions/useAddItemForm";
 
 export const AddItemForm: React.FC = () => {
@@ -11,9 +14,20 @@ export const AddItemForm: React.FC = () => {
     handleOpenForm,
   } = useAddItemForm();
 
+  const [isOCRCameraOpen, setIsOCRCameraOpen] = useState(false);
+
+  const handlePriceDetected = (price: number, productName?: string) => {
+    setFormData({
+      ...formData,
+      price: price.toString(),
+      name: productName || formData.name,
+    });
+    setIsOCRCameraOpen(false);
+  };
+
   if (!isOpen) {
     return (
-      <div className="mb-6">
+      <div className="mb-6 space-y-3">
         <button
           type="button"
           onClick={handleOpenForm}
@@ -22,6 +36,21 @@ export const AddItemForm: React.FC = () => {
           <span className="text-xl">+</span>
           <span>商品を追加</span>
         </button>
+
+        <button
+          type="button"
+          onClick={() => setIsOCRCameraOpen(true)}
+          className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-4 px-6 rounded-lg shadow-md transition-colors flex items-center justify-center space-x-2"
+        >
+          <Camera size={20} />
+          <span>価格をスキャン</span>
+        </button>
+
+        <OCRCamera
+          isOpen={isOCRCameraOpen}
+          onClose={() => setIsOCRCameraOpen(false)}
+          onPriceDetected={handlePriceDetected}
+        />
       </div>
     );
   }
@@ -55,21 +84,31 @@ export const AddItemForm: React.FC = () => {
           >
             価格 *
           </label>
-          <div className="relative">
-            <span className="absolute left-3 top-2 text-gray-500">¥</span>
-            <input
-              type="number"
-              id="itemPrice"
-              value={formData.price}
-              onChange={(e) =>
-                setFormData({ ...formData, price: e.target.value })
-              }
-              placeholder="0"
-              min="0"
-              step="1"
-              required={true}
-              className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+          <div className="flex space-x-2">
+            <div className="flex-1 relative">
+              <span className="absolute left-3 top-2 text-gray-500">¥</span>
+              <input
+                type="number"
+                id="itemPrice"
+                value={formData.price}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: e.target.value })
+                }
+                placeholder="0"
+                min="0"
+                step="1"
+                required={true}
+                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsOCRCameraOpen(true)}
+              className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-md transition-colors flex items-center justify-center"
+              title="価格をスキャン"
+            >
+              <Camera size={18} />
+            </button>
           </div>
         </div>
 
@@ -110,6 +149,12 @@ export const AddItemForm: React.FC = () => {
           </button>
         </div>
       </form>
+
+      <OCRCamera
+        isOpen={isOCRCameraOpen}
+        onClose={() => setIsOCRCameraOpen(false)}
+        onPriceDetected={handlePriceDetected}
+      />
     </div>
   );
 };

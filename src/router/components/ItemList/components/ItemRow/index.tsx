@@ -1,6 +1,6 @@
 import type React from "react";
+import { formatPrice } from "../../../../../shared/utils/calculations";
 import type { ShoppingItem } from "../../../../../types";
-import { formatPrice } from "../../../../../utils/calculations";
 import { useItemRow } from "./functions/useItemRow";
 
 interface ItemRowProps {
