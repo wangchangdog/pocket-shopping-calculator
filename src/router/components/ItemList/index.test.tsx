@@ -71,7 +71,7 @@ describe("ItemList Integration", () => {
     expect(screen.getByText("すべて削除")).toBeInTheDocument();
   });
 
-  it("商品の数量編集フローが動作する", async () => {
+  it("商品の数量編集フローが動作する", () => {
     render(<ItemList />, { wrapper });
 
     // 商品1の数量ボタンをクリック

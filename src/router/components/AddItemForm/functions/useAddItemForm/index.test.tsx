@@ -36,7 +36,9 @@ describe("useAddItemForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // alertのモック
-    vi.spyOn(window, "alert").mockImplementation(() => { });
+    vi.spyOn(window, "alert").mockImplementation(() => {
+      /* no-op */
+    });
   });
 
   it("初期状態が正しく設定される", () => {
