@@ -1,8 +1,8 @@
-import { Camera, Check, RotateCcw, Upload, X } from 'lucide-react';
+import { AlertCircle, Camera, Check, CheckCircle, RotateCcw, Upload, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import type { OCRProcessResult } from '../../../types';
 import { capturePhoto, isCameraAvailable, loadImageToCanvas, startCamera, stopCamera, switchCamera } from '../../utils/camera';
-import { initializeOCR, preprocessImage, processImageForPrice, terminateOCR } from '../../utils/ocr';
+import { advancedPreprocessImage, analyzeImageQuality, initializeOCR, preprocessImage, processImageForPrice, terminateOCR, type ImageQualityResult } from '../../utils/ocr';
 
 interface OCRCameraProps {
   isOpen: boolean;
@@ -10,7 +10,7 @@ interface OCRCameraProps {
   onPriceDetected: (price: number, productName?: string) => void;
 }
 
-type CameraState = 'idle' | 'starting' | 'active' | 'capturing' | 'processing';
+type CameraState = 'idle' | 'starting' | 'active' | 'capturing' | 'analyzing' | 'processing';
 
 export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCameraProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -20,8 +20,10 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
   const [cameraState, setCameraState] = useState<CameraState>('idle');
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const [ocrResult, setOcrResult] = useState<OCRProcessResult | null>(null);
+  const [qualityResult, setQualityResult] = useState<ImageQualityResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isOCRInitialized, setIsOCRInitialized] = useState(false);
+  const [useAdvancedProcessing, setUseAdvancedProcessing] = useState(true);
 
   // OCR初期化
   useEffect(() => {
@@ -84,10 +86,25 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
       // 写真を撮影
       const canvas = capturePhoto(videoRef.current, canvasRef.current);
 
-      // 画像前処理
-      const processedCanvas = preprocessImage(canvas);
+      setCameraState('analyzing');
+
+      // 画質評価
+      const quality = analyzeImageQuality(canvas);
+      setQualityResult(quality);
+
+      // 画質が低すぎる場合は警告
+      if (quality.rating === 'very_poor' || quality.rating === 'poor') {
+        setError(`画質が不十分です (スコア: ${quality.score}/100)`);
+        setCameraState('active');
+        return;
+      }
 
       setCameraState('processing');
+
+      // 画像前処理（高度な処理またはベーシック処理）
+      const processedCanvas = useAdvancedProcessing
+        ? advancedPreprocessImage(canvas)
+        : preprocessImage(canvas);
 
       // OCR処理
       const result = await processImageForPrice(processedCanvas);
@@ -122,14 +139,22 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
     if (!file || !canvasRef.current || !isOCRInitialized) return;
 
     try {
-      setCameraState('processing');
+      setCameraState('analyzing');
       setError(null);
 
       // ファイルをキャンバスに読み込み
       const canvas = await loadImageToCanvas(file, canvasRef.current);
 
+      // 画質評価
+      const quality = analyzeImageQuality(canvas);
+      setQualityResult(quality);
+
+      setCameraState('processing');
+
       // 画像前処理
-      const processedCanvas = preprocessImage(canvas);
+      const processedCanvas = useAdvancedProcessing
+        ? advancedPreprocessImage(canvas)
+        : preprocessImage(canvas);
 
       // OCR処理
       const result = await processImageForPrice(processedCanvas);
@@ -151,6 +176,7 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
   const handleClose = () => {
     handleStopCamera();
     setOcrResult(null);
+    setQualityResult(null);
     setError(null);
     setCameraState('idle');
     onClose();
@@ -159,6 +185,7 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
   // リトライ
   const handleRetry = () => {
     setOcrResult(null);
+    setQualityResult(null);
     setError(null);
     setCameraState('idle');
   };
@@ -170,20 +197,57 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
       {/* ヘッダー */}
       <div className="flex items-center justify-between p-4 bg-gray-900 text-white">
         <h2 className="text-lg font-semibold">価格をスキャン</h2>
-        <button
-          onClick={handleClose}
-          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-        >
-          <X size={24} />
-        </button>
+        <div className="flex items-center space-x-3">
+          {/* 高度処理切り替え */}
+          <label className="flex items-center text-sm">
+            <input
+              type="checkbox"
+              checked={useAdvancedProcessing}
+              onChange={(e) => setUseAdvancedProcessing(e.target.checked)}
+              className="mr-2"
+            />
+            高精度モード
+          </label>
+          <button
+            onClick={handleClose}
+            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+          >
+            <X size={24} />
+          </button>
+        </div>
       </div>
 
       {/* メインコンテンツ */}
       <div className="flex-1 flex flex-col">
         {/* エラー表示 */}
         {error && (
-          <div className="bg-red-500 text-white p-3 text-center">
+          <div className="bg-red-500 text-white p-3 text-center flex items-center justify-center">
+            <AlertCircle size={20} className="mr-2" />
             {error}
+          </div>
+        )}
+
+        {/* 画質結果表示 */}
+        {qualityResult && (
+          <div className={`p-3 text-center text-white ${qualityResult.rating === 'excellent' || qualityResult.rating === 'good'
+            ? 'bg-green-600'
+            : qualityResult.rating === 'reasonable'
+              ? 'bg-yellow-600'
+              : 'bg-red-600'
+            }`}>
+            <div className="flex items-center justify-center">
+              {(qualityResult.rating === 'excellent' || qualityResult.rating === 'good') ? (
+                <CheckCircle size={20} className="mr-2" />
+              ) : (
+                <AlertCircle size={20} className="mr-2" />
+              )}
+              画質スコア: {qualityResult.score}/100 ({qualityResult.rating})
+            </div>
+            {qualityResult.issues.length > 0 && (
+              <div className="text-sm mt-1">
+                {qualityResult.recommendations.join(', ')}
+              </div>
+            )}
           </div>
         )}
 
@@ -248,6 +312,19 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
                 </button>
               </div>
             )}
+
+            {qualityResult && (
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">画質詳細</h4>
+                <div className="text-xs text-gray-600 space-y-1">
+                  <div>スコア: {qualityResult.score}/100</div>
+                  <div>評価: {qualityResult.rating}</div>
+                  {qualityResult.issues.length > 0 && (
+                    <div>問題点: {qualityResult.issues.join(', ')}</div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -289,12 +366,14 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
             )}
 
             {/* 処理中表示 */}
-            {(cameraState === 'capturing' || cameraState === 'processing') && (
+            {(cameraState === 'capturing' || cameraState === 'analyzing' || cameraState === 'processing') && (
               <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                 <div className="bg-white rounded-lg p-6 text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-3"></div>
                   <div className="text-gray-700">
-                    {cameraState === 'capturing' ? '撮影中...' : '価格を認識中...'}
+                    {cameraState === 'capturing' && '撮影中...'}
+                    {cameraState === 'analyzing' && '画質を分析中...'}
+                    {cameraState === 'processing' && '価格を認識中...'}
                   </div>
                 </div>
               </div>
@@ -310,6 +389,11 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
               <p className="text-gray-300">
                 値札にカメラを向けて価格を自動認識します
               </p>
+              {useAdvancedProcessing && (
+                <p className="text-sm text-yellow-300">
+                  高精度モードが有効です
+                </p>
+              )}
             </div>
 
             <div className="space-y-4 w-full max-w-sm">

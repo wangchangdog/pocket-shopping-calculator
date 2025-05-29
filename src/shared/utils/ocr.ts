@@ -228,4 +228,386 @@ export function preprocessImage(canvas: HTMLCanvasElement): HTMLCanvasElement {
   
   ctx.putImageData(imageData, 0, 0);
   return canvas;
+}
+
+/**
+ * 高度な画像前処理（OCR精度向上版）
+ */
+export function advancedPreprocessImage(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('Canvas context not available');
+  }
+  
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  
+  // 1. ノイズ除去（メディアンフィルター近似）
+  const denoisedData = applyMedianFilter(data, canvas.width, canvas.height);
+  
+  // 2. 適応的二値化（局所しきい値）
+  const binaryData = applyAdaptiveBinarization(denoisedData, canvas.width, canvas.height);
+  
+  // 3. モルフォロジー処理（文字の補強）
+  const morphData = applyMorphology(binaryData, canvas.width, canvas.height);
+  
+  // 4. コントラスト強化
+  const enhancedData = enhanceContrast(morphData, 2.0); // より強いコントラスト
+  
+  // 結果を適用
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = enhancedData[i / 4];
+    data[i] = gray;     // R
+    data[i + 1] = gray; // G
+    data[i + 2] = gray; // B
+    // data[i + 3] はアルファ値なのでそのまま
+  }
+  
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
+/**
+ * メディアンフィルター近似（ノイズ除去）
+ */
+function applyMedianFilter(data: Uint8ClampedArray, width: number, height: number): number[] {
+  const result = new Array(width * height);
+  
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const pixels = [];
+      
+      // 3x3の近傍を取得
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const idx = ((y + dy) * width + (x + dx)) * 4;
+          const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+          pixels.push(gray);
+        }
+      }
+      
+      // 中央値を取得
+      pixels.sort((a, b) => a - b);
+      result[y * width + x] = pixels[4]; // 中央値
+    }
+  }
+  
+  return result;
+}
+
+/**
+ * 適応的二値化
+ */
+function applyAdaptiveBinarization(data: number[], width: number, height: number): number[] {
+  const result = new Array(width * height);
+  const windowSize = 15; // 局所ウィンドウサイズ
+  
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      // 局所領域の平均を計算
+      let sum = 0;
+      let count = 0;
+      
+      for (let dy = -windowSize; dy <= windowSize; dy++) {
+        for (let dx = -windowSize; dx <= windowSize; dx++) {
+          const ny = y + dy;
+          const nx = x + dx;
+          
+          if (ny >= 0 && ny < height && nx >= 0 && nx < width) {
+            sum += data[ny * width + nx] || 0;
+            count++;
+          }
+        }
+      }
+      
+      const threshold = sum / count - 10; // 少し厳しめのしきい値
+      const pixel = data[y * width + x] || 0;
+      result[y * width + x] = pixel > threshold ? 255 : 0;
+    }
+  }
+  
+  return result;
+}
+
+/**
+ * モルフォロジー処理（文字の補強）
+ */
+function applyMorphology(data: number[], width: number, height: number): number[] {
+  // クロージング操作（穴埋め）
+  const dilated = dilate(data, width, height);
+  const closed = erode(dilated, width, height);
+  return closed;
+}
+
+/**
+ * 膨張処理
+ */
+function dilate(data: number[], width: number, height: number): number[] {
+  const result = [...data];
+  
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      if (data[y * width + x] === 255) {
+        // 白ピクセルの周囲も白にする
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            result[(y + dy) * width + (x + dx)] = 255;
+          }
+        }
+      }
+    }
+  }
+  
+  return result;
+}
+
+/**
+ * 収縮処理
+ */
+function erode(data: number[], width: number, height: number): number[] {
+  const result = [...data];
+  
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      if (data[y * width + x] === 255) {
+        // 周囲に黒ピクセルがあれば黒にする
+        let hasBlack = false;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (data[(y + dy) * width + (x + dx)] === 0) {
+              hasBlack = true;
+              break;
+            }
+          }
+          if (hasBlack) break;
+        }
+        
+        if (hasBlack) {
+          result[y * width + x] = 0;
+        }
+      }
+    }
+  }
+  
+  return result;
+}
+
+/**
+ * コントラスト強化
+ */
+function enhanceContrast(data: number[], factor: number): number[] {
+  return data.map(pixel => {
+    const enhanced = ((pixel / 255 - 0.5) * factor + 0.5) * 255;
+    return Math.max(0, Math.min(255, enhanced));
+  });
+}
+
+/**
+ * 画質評価結果
+ */
+export interface ImageQualityResult {
+  score: number; // 0-100
+  rating: 'excellent' | 'good' | 'reasonable' | 'poor' | 'very_poor';
+  issues: string[];
+  recommendations: string[];
+}
+
+/**
+ * 画質評価システム（Document Quality Analyzer風）
+ */
+export function analyzeImageQuality(canvas: HTMLCanvasElement): ImageQualityResult {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('Canvas context not available');
+  }
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  
+  let totalScore = 0;
+  const issues: string[] = [];
+  const recommendations: string[] = [];
+
+  // 1. シャープネス評価（ラプラシアン分散）
+  const sharpnessScore = calculateSharpness(data, canvas.width, canvas.height);
+  totalScore += sharpnessScore;
+  
+  if (sharpnessScore < 20) {
+    issues.push('画像がぼやけています');
+    recommendations.push('カメラを安定させて再撮影してください');
+  }
+
+  // 2. 明度評価
+  const brightnessScore = calculateBrightness(data);
+  totalScore += brightnessScore;
+  
+  if (brightnessScore < 20) {
+    issues.push('画像が暗すぎます');
+    recommendations.push('明るい場所で撮影してください');
+  } else if (brightnessScore > 80) {
+    issues.push('画像が明るすぎます');
+    recommendations.push('光が直接当たらない場所で撮影してください');
+  }
+
+  // 3. コントラスト評価
+  const contrastScore = calculateContrast(data);
+  totalScore += contrastScore;
+  
+  if (contrastScore < 20) {
+    issues.push('コントラストが低すぎます');
+    recommendations.push('背景と文字の差がはっきりする角度で撮影してください');
+  }
+
+  // 4. 解像度評価
+  const resolutionScore = calculateResolution(canvas.width, canvas.height);
+  totalScore += resolutionScore;
+  
+  if (resolutionScore < 20) {
+    issues.push('解像度が低すぎます');
+    recommendations.push('より近づいて撮影してください');
+  }
+
+  // 5. 傾き評価
+  const skewScore = calculateSkew(data, canvas.width, canvas.height);
+  totalScore += skewScore;
+  
+  if (skewScore < 30) {
+    issues.push('画像が傾いています');
+    recommendations.push('文書を水平に保って撮影してください');
+  }
+
+  const averageScore = totalScore / 5;
+  let rating: ImageQualityResult['rating'];
+  
+  if (averageScore >= 80) rating = 'excellent';
+  else if (averageScore >= 65) rating = 'good';
+  else if (averageScore >= 50) rating = 'reasonable';
+  else if (averageScore >= 30) rating = 'poor';
+  else rating = 'very_poor';
+
+  return {
+    score: Math.round(averageScore),
+    rating,
+    issues,
+    recommendations,
+  };
+}
+
+/**
+ * シャープネス計算（ラプラシアン分散）
+ */
+function calculateSharpness(data: Uint8ClampedArray, width: number, height: number): number {
+  let variance = 0;
+  let count = 0;
+
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const idx = (y * width + x) * 4;
+      const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+      
+      // ラプラシアンカーネル適用
+      const laplacian = Math.abs(
+        4 * gray -
+        data[((y-1) * width + x) * 4] * 0.299 -
+        data[((y+1) * width + x) * 4] * 0.299 -
+        data[(y * width + (x-1)) * 4] * 0.299 -
+        data[(y * width + (x+1)) * 4] * 0.299
+      );
+      
+      variance += laplacian * laplacian;
+      count++;
+    }
+  }
+
+  const meanVariance = variance / count;
+  return Math.min(100, meanVariance / 1000); // 正規化
+}
+
+/**
+ * 明度計算
+ */
+function calculateBrightness(data: Uint8ClampedArray): number {
+  let totalBrightness = 0;
+  let count = 0;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const brightness = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+    totalBrightness += brightness;
+    count++;
+  }
+
+  const averageBrightness = totalBrightness / count;
+  
+  // 適切な明度範囲（80-180）にスコア化
+  if (averageBrightness >= 80 && averageBrightness <= 180) {
+    return 100;
+  } else if (averageBrightness < 80) {
+    return Math.max(0, (averageBrightness / 80) * 100);
+  } else {
+    return Math.max(0, 100 - ((averageBrightness - 180) / 75) * 100);
+  }
+}
+
+/**
+ * コントラスト計算
+ */
+function calculateContrast(data: Uint8ClampedArray): number {
+  const brightnesses: number[] = [];
+
+  for (let i = 0; i < data.length; i += 4) {
+    const brightness = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+    brightnesses.push(brightness);
+  }
+
+  const max = Math.max(...brightnesses);
+  const min = Math.min(...brightnesses);
+  const contrast = (max - min) / (max + min) * 100;
+
+  return Math.min(100, contrast);
+}
+
+/**
+ * 解像度評価
+ */
+function calculateResolution(width: number, height: number): number {
+  const totalPixels = width * height;
+  const minRecommended = 640 * 480; // 最低推奨解像度
+  const optimal = 1280 * 720; // 最適解像度
+
+  if (totalPixels >= optimal) {
+    return 100;
+  } else if (totalPixels >= minRecommended) {
+    return 50 + ((totalPixels - minRecommended) / (optimal - minRecommended)) * 50;
+  } else {
+    return (totalPixels / minRecommended) * 50;
+  }
+}
+
+/**
+ * 傾き評価（簡易版）
+ */
+function calculateSkew(data: Uint8ClampedArray, width: number, height: number): number {
+  // エッジ検出による水平線の検出
+  let horizontalEdges = 0;
+  let totalEdges = 0;
+
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const idx = (y * width + x) * 4;
+      const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+      
+      const gx = Math.abs(gray - data[(y * width + (x-1)) * 4] * 0.299);
+      const gy = Math.abs(gray - data[((y-1) * width + x) * 4] * 0.299);
+      
+      if (gx > 20 || gy > 20) {
+        totalEdges++;
+        if (gx > gy * 2) {
+          horizontalEdges++;
+        }
+      }
+    }
+  }
+
+  const horizontalRatio = totalEdges > 0 ? horizontalEdges / totalEdges : 0;
+  return horizontalRatio * 100;
 } 
