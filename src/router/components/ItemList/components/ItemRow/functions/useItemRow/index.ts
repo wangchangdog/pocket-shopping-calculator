@@ -1,6 +1,6 @@
+import { useShoppingContext } from "@/context/ShoppingContext";
+import type { ShoppingItem } from "@/types";
 import { useState } from "react";
-import type { ShoppingItem } from "../../../../../../../types";
-import { useShoppingContext } from "../../../../../../context/ShoppingContext";
 
 export interface UseItemRowReturn {
   isEditing: boolean;
@@ -28,7 +28,9 @@ export const useItemRow = (item: ShoppingItem): UseItemRowReturn => {
     setEditQuantity(item.quantity.toString());
   };
 
-  const validateQuantity = (quantity: string): { isValid: boolean; error?: string } => {
+  const validateQuantity = (
+    quantity: string
+  ): { isValid: boolean; error?: string } => {
     const newQuantity = Number.parseInt(quantity);
 
     if (Number.isNaN(newQuantity) || newQuantity <= 0) {
@@ -67,4 +69,4 @@ export const useItemRow = (item: ShoppingItem): UseItemRowReturn => {
     handleQuantitySubmit,
     handleQuantityCancel,
   };
-}; 
+};

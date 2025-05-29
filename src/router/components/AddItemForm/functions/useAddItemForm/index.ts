@@ -1,5 +1,6 @@
+import { useShoppingContext } from "@/context/ShoppingContext";
+import type React from "react";
 import { useState } from "react";
-import { useShoppingContext } from "../../../../context/ShoppingContext";
 
 export interface FormData {
   name: string;
@@ -32,7 +33,9 @@ export const useAddItemForm = (): UseAddItemFormReturn => {
     setFormData(initialFormData);
   };
 
-  const validateForm = (data: FormData): { isValid: boolean; error?: string } => {
+  const validateForm = (
+    data: FormData
+  ): { isValid: boolean; error?: string } => {
     const price = Number.parseFloat(data.price);
     const quantity = Number.parseInt(data.quantity);
 
@@ -90,4 +93,4 @@ export const useAddItemForm = (): UseAddItemFormReturn => {
     handleCancel,
     handleOpenForm,
   };
-}; 
+};

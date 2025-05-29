@@ -1,9 +1,6 @@
-import type { TaxMode } from "../../../../../types";
-import {
-  calculateSubtotal,
-  calculateTotalTax,
-} from "../../../../../utils/calculations";
-import { useShoppingContext } from "../../../../context/ShoppingContext";
+import { useShoppingContext } from "@/context/ShoppingContext";
+import type { ShoppingItem, TaxMode } from "@/types";
+import { calculateSubtotal, calculateTotalTax } from "@/utils/calculations";
 
 export interface UseTotalDisplayReturn {
   totalAmount: number;
@@ -20,7 +17,10 @@ export const useTotalDisplay = (): UseTotalDisplayReturn => {
 
   const subtotal = calculateSubtotal(items, taxMode, taxRate);
   const taxAmount = calculateTotalTax(items, taxMode, taxRate);
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const itemCount = items.reduce(
+    (sum: number, item: ShoppingItem) => sum + item.quantity,
+    0
+  );
 
   return {
     totalAmount,
@@ -30,4 +30,4 @@ export const useTotalDisplay = (): UseTotalDisplayReturn => {
     taxMode,
     taxRate,
   };
-}; 
+};

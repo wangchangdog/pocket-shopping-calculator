@@ -3,7 +3,8 @@ import { formatPrice } from "../../../utils/calculations";
 import { useTotalDisplay } from "./functions/useTotalDisplay";
 
 export const TotalDisplay: React.FC = () => {
-  const { totalAmount, subtotal, taxAmount, itemCount, taxMode, taxRate } = useTotalDisplay();
+  const { totalAmount, subtotal, taxAmount, itemCount, taxMode, taxRate } =
+    useTotalDisplay();
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
@@ -46,4 +47,4 @@ export const TotalDisplay: React.FC = () => {
       </div>
     </div>
   );
-}; 
+};

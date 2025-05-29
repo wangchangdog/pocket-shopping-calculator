@@ -1,9 +1,11 @@
-import type { ShoppingItem } from "../../../../../types";
-import { useShoppingContext } from "../../../../context/ShoppingContext";
+import { useShoppingContext } from "@/context/ShoppingContext";
+import type { ShoppingItem } from "@/types";
 
 export interface UseItemListReturn {
   items: ShoppingItem[];
   handleClearAll: () => void;
+  removeItem: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
 }
 
 export const useItemList = (): UseItemListReturn => {
@@ -20,8 +22,26 @@ export const useItemList = (): UseItemListReturn => {
     }
   };
 
+  const removeItem = (id: string) => {
+    dispatch({ type: "REMOVE_ITEM", payload: id });
+  };
+
+  const updateQuantity = (id: string, quantity: number) => {
+    if (quantity <= 0) {
+      removeItem(id);
+      return;
+    }
+
+    dispatch({
+      type: "UPDATE_QUANTITY",
+      payload: { id, quantity },
+    });
+  };
+
   return {
     items,
     handleClearAll,
+    removeItem,
+    updateQuantity,
   };
-}; 
+};

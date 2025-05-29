@@ -98,4 +98,4 @@ export const ItemRow: React.FC<ItemRowProps> = ({ item }) => {
       </div>
     </div>
   );
-}; 
+};

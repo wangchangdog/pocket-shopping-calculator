@@ -15,24 +15,26 @@ export const TaxModeToggle: React.FC = () => {
         <button
           type="button"
           onClick={() => handleTaxModeChange("included")}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${taxMode === "included"
-            ? "bg-blue-500 text-white shadow-sm"
-            : "text-gray-600 hover:text-gray-800"
-            }`}
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            taxMode === "included"
+              ? "bg-blue-500 text-white shadow-sm"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
         >
           税込
         </button>
         <button
           type="button"
           onClick={() => handleTaxModeChange("excluded")}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${taxMode === "excluded"
-            ? "bg-blue-500 text-white shadow-sm"
-            : "text-gray-600 hover:text-gray-800"
-            }`}
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            taxMode === "excluded"
+              ? "bg-blue-500 text-white shadow-sm"
+              : "text-gray-600 hover:text-gray-800"
+          }`}
         >
           税抜
         </button>
       </div>
     </div>
   );
-}; 
+};

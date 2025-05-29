@@ -1,26 +1,27 @@
-import { act, renderHook } from '@testing-library/react';
-import type { ReactNode } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ShoppingProvider } from '../../../../context/ShoppingContext';
-import { useAddItemForm } from './index';
+import { ShoppingProvider } from "@/context/ShoppingContext";
+import { act, renderHook } from "@testing-library/react";
+import type React from "react";
+import type { ReactNode } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useAddItemForm } from "./index";
 
 // ShoppingContextのモック
 const mockDispatch = vi.fn();
 
-vi.mock('../../../../context/ShoppingContext', async () => {
-  const actual = await vi.importActual('../../../../context/ShoppingContext');
+vi.mock("@/context/ShoppingContext", async () => {
+  const actual = await vi.importActual("@/context/ShoppingContext");
   return {
     ...actual,
     useShoppingContext: () => ({
       dispatch: mockDispatch,
       session: {
-        sessionId: 'test-session',
-        taxMode: 'included' as const,
+        sessionId: "test-session",
+        taxMode: "included" as const,
         taxRate: 0.1,
         items: [],
         totalAmount: 0,
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T00:00:00.000Z',
+        createdAt: "2024-01-01T00:00:00.000Z",
+        updatedAt: "2024-01-01T00:00:00.000Z",
       },
     }),
   };
@@ -31,25 +32,25 @@ const wrapper = ({ children }: { children: ReactNode }) => (
   <ShoppingProvider>{children}</ShoppingProvider>
 );
 
-describe('useAddItemForm', () => {
+describe("useAddItemForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // alertのモック
-    vi.spyOn(window, 'alert').mockImplementation(() => { });
+    vi.spyOn(window, "alert").mockImplementation(() => { });
   });
 
-  it('初期状態が正しく設定される', () => {
+  it("初期状態が正しく設定される", () => {
     const { result } = renderHook(() => useAddItemForm(), { wrapper });
 
     expect(result.current.isOpen).toBe(false);
     expect(result.current.formData).toEqual({
-      name: '',
-      price: '',
-      quantity: '1',
+      name: "",
+      price: "",
+      quantity: "1",
     });
   });
 
-  it('フォームを開くことができる', () => {
+  it("フォームを開くことができる", () => {
     const { result } = renderHook(() => useAddItemForm(), { wrapper });
 
     act(() => {
@@ -59,13 +60,13 @@ describe('useAddItemForm', () => {
     expect(result.current.isOpen).toBe(true);
   });
 
-  it('フォームデータを更新できる', () => {
+  it("フォームデータを更新できる", () => {
     const { result } = renderHook(() => useAddItemForm(), { wrapper });
 
     const newFormData = {
-      name: 'テスト商品',
-      price: '100',
-      quantity: '2',
+      name: "テスト商品",
+      price: "100",
+      quantity: "2",
     };
 
     act(() => {
@@ -75,7 +76,7 @@ describe('useAddItemForm', () => {
     expect(result.current.formData).toEqual(newFormData);
   });
 
-  it('有効なデータでフォームを送信できる', () => {
+  it("有効なデータでフォームを送信できる", () => {
     const { result } = renderHook(() => useAddItemForm(), { wrapper });
 
     // フォームを開く
@@ -86,9 +87,9 @@ describe('useAddItemForm', () => {
     // フォームデータを設定
     act(() => {
       result.current.setFormData({
-        name: 'テスト商品',
-        price: '100',
-        quantity: '2',
+        name: "テスト商品",
+        price: "100",
+        quantity: "2",
       });
     });
 
@@ -103,9 +104,9 @@ describe('useAddItemForm', () => {
 
     // dispatchが正しく呼ばれることを確認
     expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'ADD_ITEM',
+      type: "ADD_ITEM",
       payload: {
-        name: 'テスト商品',
+        name: "テスト商品",
         price: 100,
         quantity: 2,
       },
@@ -114,20 +115,20 @@ describe('useAddItemForm', () => {
     // フォームがリセットされることを確認
     expect(result.current.isOpen).toBe(false);
     expect(result.current.formData).toEqual({
-      name: '',
-      price: '',
-      quantity: '1',
+      name: "",
+      price: "",
+      quantity: "1",
     });
   });
 
-  it('商品名が空の場合はデフォルト名が使用される', () => {
+  it("商品名が空の場合はデフォルト名が使用される", () => {
     const { result } = renderHook(() => useAddItemForm(), { wrapper });
 
     act(() => {
       result.current.setFormData({
-        name: '',
-        price: '100',
-        quantity: '1',
+        name: "",
+        price: "100",
+        quantity: "1",
       });
     });
 
@@ -140,24 +141,24 @@ describe('useAddItemForm', () => {
     });
 
     expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'ADD_ITEM',
+      type: "ADD_ITEM",
       payload: {
-        name: '商品',
+        name: "商品",
         price: 100,
         quantity: 1,
       },
     });
   });
 
-  it('無効な価格の場合はエラーが表示される', () => {
+  it("無効な価格の場合はエラーが表示される", () => {
     const { result } = renderHook(() => useAddItemForm(), { wrapper });
-    const alertSpy = vi.spyOn(window, 'alert');
+    const alertSpy = vi.spyOn(window, "alert");
 
     act(() => {
       result.current.setFormData({
-        name: 'テスト商品',
-        price: '0',
-        quantity: '1',
+        name: "テスト商品",
+        price: "0",
+        quantity: "1",
       });
     });
 
@@ -169,19 +170,19 @@ describe('useAddItemForm', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(alertSpy).toHaveBeenCalledWith('正しい価格を入力してください');
+    expect(alertSpy).toHaveBeenCalledWith("正しい価格を入力してください");
     expect(mockDispatch).not.toHaveBeenCalled();
   });
 
-  it('無効な数量の場合はエラーが表示される', () => {
+  it("無効な数量の場合はエラーが表示される", () => {
     const { result } = renderHook(() => useAddItemForm(), { wrapper });
-    const alertSpy = vi.spyOn(window, 'alert');
+    const alertSpy = vi.spyOn(window, "alert");
 
     act(() => {
       result.current.setFormData({
-        name: 'テスト商品',
-        price: '100',
-        quantity: '0',
+        name: "テスト商品",
+        price: "100",
+        quantity: "0",
       });
     });
 
@@ -193,20 +194,20 @@ describe('useAddItemForm', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(alertSpy).toHaveBeenCalledWith('正しい数量を入力してください');
+    expect(alertSpy).toHaveBeenCalledWith("正しい数量を入力してください");
     expect(mockDispatch).not.toHaveBeenCalled();
   });
 
-  it('キャンセル時にフォームがリセットされる', () => {
+  it("キャンセル時にフォームがリセットされる", () => {
     const { result } = renderHook(() => useAddItemForm(), { wrapper });
 
     // フォームを開いてデータを設定
     act(() => {
       result.current.setIsOpen(true);
       result.current.setFormData({
-        name: 'テスト商品',
-        price: '100',
-        quantity: '2',
+        name: "テスト商品",
+        price: "100",
+        quantity: "2",
       });
     });
 
@@ -217,21 +218,21 @@ describe('useAddItemForm', () => {
 
     expect(result.current.isOpen).toBe(false);
     expect(result.current.formData).toEqual({
-      name: '',
-      price: '',
-      quantity: '1',
+      name: "",
+      price: "",
+      quantity: "1",
     });
   });
 
-  it('NaNの価格の場合はエラーが表示される', () => {
+  it("NaNの価格の場合はエラーが表示される", () => {
     const { result } = renderHook(() => useAddItemForm(), { wrapper });
-    const alertSpy = vi.spyOn(window, 'alert');
+    const alertSpy = vi.spyOn(window, "alert");
 
     act(() => {
       result.current.setFormData({
-        name: 'テスト商品',
-        price: 'invalid',
-        quantity: '1',
+        name: "テスト商品",
+        price: "invalid",
+        quantity: "1",
       });
     });
 
@@ -243,19 +244,19 @@ describe('useAddItemForm', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(alertSpy).toHaveBeenCalledWith('正しい価格を入力してください');
+    expect(alertSpy).toHaveBeenCalledWith("正しい価格を入力してください");
     expect(mockDispatch).not.toHaveBeenCalled();
   });
 
-  it('NaNの数量の場合はエラーが表示される', () => {
+  it("NaNの数量の場合はエラーが表示される", () => {
     const { result } = renderHook(() => useAddItemForm(), { wrapper });
-    const alertSpy = vi.spyOn(window, 'alert');
+    const alertSpy = vi.spyOn(window, "alert");
 
     act(() => {
       result.current.setFormData({
-        name: 'テスト商品',
-        price: '100',
-        quantity: 'invalid',
+        name: "テスト商品",
+        price: "100",
+        quantity: "invalid",
       });
     });
 
@@ -267,7 +268,7 @@ describe('useAddItemForm', () => {
       result.current.handleSubmit(mockEvent);
     });
 
-    expect(alertSpy).toHaveBeenCalledWith('正しい数量を入力してください');
+    expect(alertSpy).toHaveBeenCalledWith("正しい数量を入力してください");
     expect(mockDispatch).not.toHaveBeenCalled();
   });
-}); 
+});
