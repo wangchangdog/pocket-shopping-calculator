@@ -18,7 +18,7 @@ let currentStream: MediaStream | null = null;
  * カメラが利用可能かチェック
  */
 export function isCameraAvailable(): boolean {
-  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  return !!(navigator.mediaDevices?.getUserMedia);
 }
 
 /**
@@ -55,7 +55,13 @@ export async function startCamera(
     return new Promise((resolve, reject) => {
       videoElement.onloadedmetadata = () => {
         videoElement.play()
-          .then(() => resolve(currentStream!))
+          .then(() => {
+            if (currentStream) {
+              resolve(currentStream);
+            } else {
+              reject(new Error('Stream is null'));
+            }
+          })
           .catch(reject);
       };
       videoElement.onerror = reject;
@@ -71,9 +77,9 @@ export async function startCamera(
  */
 export function stopCamera(): void {
   if (currentStream) {
-    currentStream.getTracks().forEach(track => {
+    for (const track of currentStream.getTracks()) {
       track.stop();
-    });
+    }
     currentStream = null;
   }
 }
@@ -124,7 +130,7 @@ export async function getAvailableCameras(): Promise<MediaDeviceInfo[]> {
 /**
  * カメラの向きを切り替え
  */
-export async function switchCamera(
+export function switchCamera(
   videoElement: HTMLVideoElement,
   facingMode: 'user' | 'environment'
 ): Promise<MediaStream> {
@@ -174,8 +180,8 @@ export function loadImageToCanvas(
  */
 export function canvasToDataURL(
   canvasElement: HTMLCanvasElement,
-  format: string = 'image/jpeg',
-  quality: number = 0.8
+  format = 'image/jpeg',
+  quality = 0.8
 ): string {
   return canvasElement.toDataURL(format, quality);
 }
@@ -186,8 +192,8 @@ export function canvasToDataURL(
 export function resizeImage(
   sourceCanvas: HTMLCanvasElement,
   targetCanvas: HTMLCanvasElement,
-  maxWidth: number = 800,
-  maxHeight: number = 600
+  maxWidth = 800,
+  maxHeight = 600
 ): HTMLCanvasElement {
   const ctx = targetCanvas.getContext('2d');
   if (!ctx) {
@@ -197,7 +203,7 @@ export function resizeImage(
   const { width: originalWidth, height: originalHeight } = sourceCanvas;
   
   // アスペクト比を保持してリサイズ
-  let { width, height } = calculateResizedDimensions(
+  const { width, height } = calculateResizedDimensions(
     originalWidth,
     originalHeight,
     maxWidth,

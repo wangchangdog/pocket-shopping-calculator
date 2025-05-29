@@ -65,6 +65,6 @@ export interface CameraSettings {
 
 export interface OCRSettings {
   language: string;
-  engineMode: any;
-  pageSegMode: any;
+  engineMode: unknown;
+  pageSegMode: unknown;
 }

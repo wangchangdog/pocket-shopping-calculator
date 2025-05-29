@@ -36,7 +36,7 @@ export async function initializeOCR(settings: Partial<OCRSettings> = {}): Promis
   const config = { ...DEFAULT_OCR_SETTINGS, ...settings };
   
   try {
-    ocrWorker = await createWorker(config.language, config.engineMode, {
+    ocrWorker = await createWorker(config.language, config.engineMode as number, {
       logger: (m) => {
         if (process.env.NODE_ENV === 'development') {
           console.log('[OCR]', m);
