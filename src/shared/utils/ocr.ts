@@ -424,59 +424,95 @@ export function analyzeImageQuality(canvas: HTMLCanvasElement): ImageQualityResu
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
   
+  let validScores = 0;
   let totalScore = 0;
   const issues: string[] = [];
   const recommendations: string[] = [];
 
   // 1. シャープネス評価（ラプラシアン分散）
-  const sharpnessScore = calculateSharpness(data, canvas.width, canvas.height);
-  totalScore += sharpnessScore;
-  
-  if (sharpnessScore < 20) {
-    issues.push('画像がぼやけています');
-    recommendations.push('カメラを安定させて再撮影してください');
+  try {
+    const sharpnessScore = calculateSharpness(data, canvas.width, canvas.height);
+    totalScore += sharpnessScore;
+    validScores++;
+    
+    if (sharpnessScore < 20) {
+      issues.push('画像がぼやけています');
+      recommendations.push('カメラを安定させて再撮影してください');
+    }
+  } catch (error) {
+    console.warn('Sharpness calculation failed:', error);
   }
 
   // 2. 明度評価
-  const brightnessScore = calculateBrightness(data);
-  totalScore += brightnessScore;
-  
-  if (brightnessScore < 20) {
-    issues.push('画像が暗すぎます');
-    recommendations.push('明るい場所で撮影してください');
-  } else if (brightnessScore > 80) {
-    issues.push('画像が明るすぎます');
-    recommendations.push('光が直接当たらない場所で撮影してください');
+  try {
+    const brightnessScore = calculateBrightness(data);
+    totalScore += brightnessScore;
+    validScores++;
+    
+    if (brightnessScore < 20) {
+      issues.push('画像が暗すぎます');
+      recommendations.push('明るい場所で撮影してください');
+    } else if (brightnessScore > 80) {
+      issues.push('画像が明るすぎます');
+      recommendations.push('光が直接当たらない場所で撮影してください');
+    }
+  } catch (error) {
+    console.warn('Brightness calculation failed:', error);
   }
 
   // 3. コントラスト評価
-  const contrastScore = calculateContrast(data);
-  totalScore += contrastScore;
-  
-  if (contrastScore < 20) {
-    issues.push('コントラストが低すぎます');
-    recommendations.push('背景と文字の差がはっきりする角度で撮影してください');
+  try {
+    const contrastScore = calculateContrast(data);
+    totalScore += contrastScore;
+    validScores++;
+    
+    if (contrastScore < 20) {
+      issues.push('コントラストが低すぎます');
+      recommendations.push('背景と文字の差がはっきりする角度で撮影してください');
+    }
+  } catch (error) {
+    console.warn('Contrast calculation failed:', error);
   }
 
   // 4. 解像度評価
-  const resolutionScore = calculateResolution(canvas.width, canvas.height);
-  totalScore += resolutionScore;
-  
-  if (resolutionScore < 20) {
-    issues.push('解像度が低すぎます');
-    recommendations.push('より近づいて撮影してください');
+  try {
+    const resolutionScore = calculateResolution(canvas.width, canvas.height);
+    totalScore += resolutionScore;
+    validScores++;
+    
+    if (resolutionScore < 20) {
+      issues.push('解像度が低すぎます');
+      recommendations.push('より近づいて撮影してください');
+    }
+  } catch (error) {
+    console.warn('Resolution calculation failed:', error);
   }
 
   // 5. 傾き評価
-  const skewScore = calculateSkew(data, canvas.width, canvas.height);
-  totalScore += skewScore;
-  
-  if (skewScore < 30) {
-    issues.push('画像が傾いています');
-    recommendations.push('文書を水平に保って撮影してください');
+  try {
+    const skewScore = calculateSkew(data, canvas.width, canvas.height);
+    totalScore += skewScore;
+    validScores++;
+    
+    if (skewScore < 30) {
+      issues.push('画像が傾いています');
+      recommendations.push('文書を水平に保って撮影してください');
+    }
+  } catch (error) {
+    console.warn('Skew calculation failed:', error);
   }
 
-  const averageScore = totalScore / 5;
+  // 有効なスコアが少なくとも1つはあることを確認
+  if (validScores === 0) {
+    return {
+      score: 0,
+      rating: 'very_poor',
+      issues: ['画質評価に失敗しました'],
+      recommendations: ['別の画像で再試行してください'],
+    };
+  }
+
+  const averageScore = totalScore / validScores;
   let rating: ImageQualityResult['rating'];
   
   if (averageScore >= 80) rating = 'excellent';
@@ -500,24 +536,29 @@ function calculateSharpness(data: Uint8ClampedArray, width: number, height: numb
   let variance = 0;
   let count = 0;
 
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
+  // 大きな画像の場合はサンプリングして高速化
+  const sampleRate = Math.max(1, Math.floor(Math.min(width, height) / 100)); // 最大100x100サンプル
+
+  for (let y = sampleRate; y < height - sampleRate; y += sampleRate) {
+    for (let x = sampleRate; x < width - sampleRate; x += sampleRate) {
       const idx = (y * width + x) * 4;
       const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
       
       // ラプラシアンカーネル適用
       const laplacian = Math.abs(
         4 * gray -
-        data[((y-1) * width + x) * 4] * 0.299 -
-        data[((y+1) * width + x) * 4] * 0.299 -
-        data[(y * width + (x-1)) * 4] * 0.299 -
-        data[(y * width + (x+1)) * 4] * 0.299
+        data[((y-sampleRate) * width + x) * 4] * 0.299 -
+        data[((y+sampleRate) * width + x) * 4] * 0.299 -
+        data[(y * width + (x-sampleRate)) * 4] * 0.299 -
+        data[(y * width + (x+sampleRate)) * 4] * 0.299
       );
       
       variance += laplacian * laplacian;
       count++;
     }
   }
+
+  if (count === 0) return 0;
 
   const meanVariance = variance / count;
   return Math.min(100, meanVariance / 1000); // 正規化
@@ -530,11 +571,16 @@ function calculateBrightness(data: Uint8ClampedArray): number {
   let totalBrightness = 0;
   let count = 0;
 
-  for (let i = 0; i < data.length; i += 4) {
+  // 大きな画像でパフォーマンス向上のためサンプリング
+  const sampleRate = Math.max(1, Math.floor(data.length / (4 * 1000))); // 最大1000ピクセルサンプル
+
+  for (let i = 0; i < data.length; i += 4 * sampleRate) {
     const brightness = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
     totalBrightness += brightness;
     count++;
   }
+
+  if (count === 0) return 0;
 
   const averageBrightness = totalBrightness / count;
   
@@ -552,17 +598,25 @@ function calculateBrightness(data: Uint8ClampedArray): number {
  * コントラスト計算
  */
 function calculateContrast(data: Uint8ClampedArray): number {
-  const brightnesses: number[] = [];
+  let maxBrightness = 0;
+  let minBrightness = 255;
 
-  for (let i = 0; i < data.length; i += 4) {
+  // 大きな画像でスタックオーバーフローを避けるため、
+  // サンプリングして計算を高速化
+  const sampleRate = Math.max(1, Math.floor(data.length / (4 * 10000))); // 最大10000ピクセルサンプル
+
+  for (let i = 0; i < data.length; i += 4 * sampleRate) {
     const brightness = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-    brightnesses.push(brightness);
+    maxBrightness = Math.max(maxBrightness, brightness);
+    minBrightness = Math.min(minBrightness, brightness);
   }
 
-  const max = Math.max(...brightnesses);
-  const min = Math.min(...brightnesses);
-  const contrast = (max - min) / (max + min) * 100;
+  // ゼロ除算を防ぐ
+  if (maxBrightness + minBrightness === 0) {
+    return 0;
+  }
 
+  const contrast = (maxBrightness - minBrightness) / (maxBrightness + minBrightness) * 100;
   return Math.min(100, contrast);
 }
 
@@ -591,13 +645,16 @@ function calculateSkew(data: Uint8ClampedArray, width: number, height: number): 
   let horizontalEdges = 0;
   let totalEdges = 0;
 
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
+  // 大きな画像の場合はサンプリングして高速化
+  const sampleRate = Math.max(1, Math.floor(Math.min(width, height) / 200)); // 最大200x200サンプル
+
+  for (let y = sampleRate; y < height - sampleRate; y += sampleRate) {
+    for (let x = sampleRate; x < width - sampleRate; x += sampleRate) {
       const idx = (y * width + x) * 4;
       const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
       
-      const gx = Math.abs(gray - data[(y * width + (x-1)) * 4] * 0.299);
-      const gy = Math.abs(gray - data[((y-1) * width + x) * 4] * 0.299);
+      const gx = Math.abs(gray - data[(y * width + (x-sampleRate)) * 4] * 0.299);
+      const gy = Math.abs(gray - data[((y-sampleRate) * width + x) * 4] * 0.299);
       
       if (gx > 20 || gy > 20) {
         totalEdges++;

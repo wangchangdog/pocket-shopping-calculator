@@ -142,7 +142,9 @@ export function switchCamera(
  */
 export function loadImageToCanvas(
   file: File,
-  canvasElement: HTMLCanvasElement
+  canvasElement: HTMLCanvasElement,
+  maxWidth = 1920,
+  maxHeight = 1080
 ): Promise<HTMLCanvasElement> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -157,12 +159,27 @@ export function loadImageToCanvas(
           return;
         }
 
-        // キャンバスサイズを画像に合わせて設定
-        canvasElement.width = img.width;
-        canvasElement.height = img.height;
+        // 元のサイズ
+        let { width, height } = img;
 
-        // 画像をキャンバスに描画
-        ctx.drawImage(img, 0, 0);
+        // 最大サイズを超える場合はリサイズ
+        if (width > maxWidth || height > maxHeight) {
+          const { width: newWidth, height: newHeight } = calculateResizedDimensions(
+            width,
+            height,
+            maxWidth,
+            maxHeight
+          );
+          width = newWidth;
+          height = newHeight;
+        }
+
+        // キャンバスサイズを設定
+        canvasElement.width = width;
+        canvasElement.height = height;
+
+        // 画像をキャンバスに描画（リサイズして）
+        ctx.drawImage(img, 0, 0, width, height);
         resolve(canvasElement);
       };
 
