@@ -1,17 +1,13 @@
 import type React from "react";
-import type { ShoppingItem } from "../../types";
-import { formatPrice } from "../../utils/calculations";
-import type { UseItemRowReturn } from "./useItemRow";
+import type { ShoppingItem } from "../../../../types";
+import { formatPrice } from "../../../../utils/calculations";
+import { useItemRow } from "./functions/useItemRow";
 
-interface ItemRowFunctionProps {
+interface ItemRowProps {
   item: ShoppingItem;
-  hook: UseItemRowReturn;
 }
 
-export const ItemRowFunction: React.FC<ItemRowFunctionProps> = ({
-  item,
-  hook,
-}) => {
+export const ItemRow: React.FC<ItemRowProps> = ({ item }) => {
   const {
     isEditing,
     editQuantity,
@@ -20,7 +16,7 @@ export const ItemRowFunction: React.FC<ItemRowFunctionProps> = ({
     handleQuantityEdit,
     handleQuantitySubmit,
     handleQuantityCancel,
-  } = hook;
+  } = useItemRow(item);
 
   const totalPrice = item.price * item.quantity;
 

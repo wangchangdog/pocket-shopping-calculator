@@ -1,5 +1,5 @@
-import { useShoppingContext } from "../../context/ShoppingContext";
-import type { ShoppingItem } from "../../types";
+import { useShoppingContext } from "../../../../context/ShoppingContext";
+import type { ShoppingItem } from "../../../../types";
 
 export interface UseItemListReturn {
   items: ShoppingItem[];

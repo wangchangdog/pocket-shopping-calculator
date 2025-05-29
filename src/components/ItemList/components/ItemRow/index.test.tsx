@@ -1,8 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { ShoppingItem } from '../../types';
-import { ItemRowFunction } from './ItemRowFunction';
-import type { UseItemRowReturn } from './useItemRow';
+import type { ShoppingItem } from '../../../../types';
+import { ItemRow } from './index';
 
 // テスト用商品データ
 const testItem: ShoppingItem = {
@@ -13,8 +12,15 @@ const testItem: ShoppingItem = {
   addedAt: '2024-01-01T00:00:00.000Z',
 };
 
+// useItemRowのモック
+const mockUseItemRow = vi.fn();
+
+vi.mock('./functions/useItemRow', () => ({
+  useItemRow: () => mockUseItemRow(),
+}));
+
 // モックフック作成ヘルパー
-const createMockHook = (overrides: Partial<UseItemRowReturn> = {}): UseItemRowReturn => ({
+const createMockHook = (overrides = {}) => ({
   isEditing: false,
   editQuantity: '2',
   setEditQuantity: vi.fn(),
@@ -25,11 +31,11 @@ const createMockHook = (overrides: Partial<UseItemRowReturn> = {}): UseItemRowRe
   ...overrides,
 });
 
-describe('ItemRowFunction', () => {
+describe('ItemRow', () => {
   it('商品情報が正しく表示される', () => {
-    const mockHook = createMockHook();
+    mockUseItemRow.mockReturnValue(createMockHook());
 
-    render(<ItemRowFunction item={testItem} hook={mockHook} />);
+    render(<ItemRow item={testItem} />);
 
     expect(screen.getByText('テスト商品')).toBeInTheDocument();
     expect(screen.getByText('¥100')).toBeInTheDocument();
@@ -38,9 +44,9 @@ describe('ItemRowFunction', () => {
   });
 
   it('編集モードでない時は数量ボタンが表示される', () => {
-    const mockHook = createMockHook({ isEditing: false });
+    mockUseItemRow.mockReturnValue(createMockHook({ isEditing: false }));
 
-    render(<ItemRowFunction item={testItem} hook={mockHook} />);
+    render(<ItemRow item={testItem} />);
 
     const quantityButton = screen.getByRole('button', { name: '2個' });
     expect(quantityButton).toBeInTheDocument();
@@ -49,8 +55,9 @@ describe('ItemRowFunction', () => {
 
   it('数量ボタンをクリックするとhandleQuantityEditが呼ばれる', () => {
     const mockHook = createMockHook({ isEditing: false });
+    mockUseItemRow.mockReturnValue(mockHook);
 
-    render(<ItemRowFunction item={testItem} hook={mockHook} />);
+    render(<ItemRow item={testItem} />);
 
     const quantityButton = screen.getByRole('button', { name: '2個' });
     fireEvent.click(quantityButton);
@@ -59,12 +66,12 @@ describe('ItemRowFunction', () => {
   });
 
   it('編集モードの時は入力フィールドと確定・キャンセルボタンが表示される', () => {
-    const mockHook = createMockHook({
+    mockUseItemRow.mockReturnValue(createMockHook({
       isEditing: true,
       editQuantity: '3'
-    });
+    }));
 
-    render(<ItemRowFunction item={testItem} hook={mockHook} />);
+    render(<ItemRow item={testItem} />);
 
     const input = screen.getByDisplayValue('3');
     expect(input).toBeInTheDocument();
@@ -80,8 +87,9 @@ describe('ItemRowFunction', () => {
       isEditing: true,
       editQuantity: '2'
     });
+    mockUseItemRow.mockReturnValue(mockHook);
 
-    render(<ItemRowFunction item={testItem} hook={mockHook} />);
+    render(<ItemRow item={testItem} />);
 
     const input = screen.getByDisplayValue('2');
     fireEvent.change(input, { target: { value: '5' } });
@@ -91,8 +99,9 @@ describe('ItemRowFunction', () => {
 
   it('確定ボタンをクリックするとhandleQuantitySubmitが呼ばれる', () => {
     const mockHook = createMockHook({ isEditing: true });
+    mockUseItemRow.mockReturnValue(mockHook);
 
-    render(<ItemRowFunction item={testItem} hook={mockHook} />);
+    render(<ItemRow item={testItem} />);
 
     const submitButton = screen.getByText('✓');
     fireEvent.click(submitButton);
@@ -102,8 +111,9 @@ describe('ItemRowFunction', () => {
 
   it('キャンセルボタンをクリックするとhandleQuantityCancelが呼ばれる', () => {
     const mockHook = createMockHook({ isEditing: true });
+    mockUseItemRow.mockReturnValue(mockHook);
 
-    render(<ItemRowFunction item={testItem} hook={mockHook} />);
+    render(<ItemRow item={testItem} />);
 
     const cancelButton = screen.getByText('✕');
     fireEvent.click(cancelButton);
@@ -113,8 +123,9 @@ describe('ItemRowFunction', () => {
 
   it('削除ボタンをクリックするとhandleDeleteが呼ばれる', () => {
     const mockHook = createMockHook();
+    mockUseItemRow.mockReturnValue(mockHook);
 
-    render(<ItemRowFunction item={testItem} hook={mockHook} />);
+    render(<ItemRow item={testItem} />);
 
     const deleteButton = screen.getByRole('button', { name: '削除' });
     fireEvent.click(deleteButton);
@@ -123,9 +134,9 @@ describe('ItemRowFunction', () => {
   });
 
   it('削除ボタンに正しいアクセシビリティ属性が設定されている', () => {
-    const mockHook = createMockHook();
+    mockUseItemRow.mockReturnValue(createMockHook());
 
-    render(<ItemRowFunction item={testItem} hook={mockHook} />);
+    render(<ItemRow item={testItem} />);
 
     const deleteButton = screen.getByRole('button', { name: '削除' });
     expect(deleteButton).toHaveAttribute('title', '削除');
@@ -139,9 +150,9 @@ describe('ItemRowFunction', () => {
       ...testItem,
       name: 'とても長い商品名でテストするためのアイテムです',
     };
-    const mockHook = createMockHook();
+    mockUseItemRow.mockReturnValue(createMockHook());
 
-    render(<ItemRowFunction item={longNameItem} hook={mockHook} />);
+    render(<ItemRow item={longNameItem} />);
 
     const nameElement = screen.getByText('とても長い商品名でテストするためのアイテムです');
     expect(nameElement).toHaveClass('truncate');
@@ -153,9 +164,9 @@ describe('ItemRowFunction', () => {
       price: 1234567,
       quantity: 1,
     };
-    const mockHook = createMockHook();
+    mockUseItemRow.mockReturnValue(createMockHook());
 
-    render(<ItemRowFunction item={expensiveItem} hook={mockHook} />);
+    render(<ItemRow item={expensiveItem} />);
 
     // 単価と合計金額の両方が表示されることを確認
     const priceElements = screen.getAllByText('¥1,234,567');

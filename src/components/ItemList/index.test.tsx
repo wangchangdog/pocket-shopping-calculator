@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ShoppingProvider } from '../../context/ShoppingContext';
 import type { ShoppingItem } from '../../types';
-import { ItemList } from './index';
+import { ItemList } from './';
 
 // テスト用商品データ
 const mockItems: ShoppingItem[] = [

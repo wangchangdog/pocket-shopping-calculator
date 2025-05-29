@@ -1,15 +1,15 @@
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ShoppingProvider } from '../../context/ShoppingContext';
-import type { ShoppingItem } from '../../types';
-import { useItemRow } from './useItemRow';
+import { ShoppingProvider } from '../../../../../../context/ShoppingContext';
+import type { ShoppingItem } from '../../../../../../types';
+import { useItemRow } from './index';
 
 // モック設定
 const mockDispatch = vi.fn();
 
-vi.mock('../../context/ShoppingContext', async () => {
-  const actual = await vi.importActual('../../context/ShoppingContext');
+vi.mock('../../../../../../context/ShoppingContext', async () => {
+  const actual = await vi.importActual('../../../../../../context/ShoppingContext');
   return {
     ...actual,
     useShoppingContext: () => ({
