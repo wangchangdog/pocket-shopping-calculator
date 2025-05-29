@@ -1,14 +1,14 @@
 import type React from "react";
-import { useShoppingContext } from "../context/ShoppingContext";
-import type { TaxMode } from "../types";
+import type { UseTaxModeToggleReturn } from "./useTaxModeToggle";
 
-export const TaxModeToggle: React.FC = () => {
-  const { session, dispatch } = useShoppingContext();
-  const { taxMode, taxRate } = session;
+interface TaxModeToggleFunctionProps {
+  hook: UseTaxModeToggleReturn;
+}
 
-  const handleTaxModeChange = (mode: TaxMode) => {
-    dispatch({ type: "SET_TAX_MODE", payload: mode });
-  };
+export const TaxModeToggleFunction: React.FC<TaxModeToggleFunctionProps> = ({
+  hook,
+}) => {
+  const { taxMode, taxRate, handleTaxModeChange } = hook;
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4 mb-4">
@@ -21,26 +21,24 @@ export const TaxModeToggle: React.FC = () => {
         <button
           type="button"
           onClick={() => handleTaxModeChange("included")}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-            taxMode === "included"
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${taxMode === "included"
               ? "bg-blue-500 text-white shadow-sm"
               : "text-gray-600 hover:text-gray-800"
-          }`}
+            }`}
         >
           税込
         </button>
         <button
           type="button"
           onClick={() => handleTaxModeChange("excluded")}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-            taxMode === "excluded"
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${taxMode === "excluded"
               ? "bg-blue-500 text-white shadow-sm"
               : "text-gray-600 hover:text-gray-800"
-          }`}
+            }`}
         >
           税抜
         </button>
       </div>
     </div>
   );
-};
+}; 

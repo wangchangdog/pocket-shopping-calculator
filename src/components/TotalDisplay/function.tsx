@@ -1,18 +1,15 @@
 import type React from "react";
-import { useShoppingContext } from "../context/ShoppingContext";
-import {
-  calculateSubtotal,
-  calculateTotalTax,
-  formatPrice,
-} from "../utils/calculations";
+import { formatPrice } from "../../utils/calculations";
+import type { UseTotalDisplayReturn } from "./useTotalDisplay";
 
-export const TotalDisplay: React.FC = () => {
-  const { session } = useShoppingContext();
-  const { items, taxMode, taxRate, totalAmount } = session;
+interface TotalDisplayFunctionProps {
+  hook: UseTotalDisplayReturn;
+}
 
-  const subtotal = calculateSubtotal(items, taxMode, taxRate);
-  const taxAmount = calculateTotalTax(items, taxMode, taxRate);
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+export const TotalDisplayFunction: React.FC<TotalDisplayFunctionProps> = ({
+  hook,
+}) => {
+  const { totalAmount, subtotal, taxAmount, itemCount, taxMode, taxRate } = hook;
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
@@ -55,4 +52,4 @@ export const TotalDisplay: React.FC = () => {
       </div>
     </div>
   );
-};
+}; 
