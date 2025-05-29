@@ -1,8 +1,8 @@
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ShoppingItem } from '../../../../../types';
 import { ShoppingProvider } from '../../../../context/ShoppingContext';
-import type { ShoppingItem } from '../../../../types';
 import { useItemList } from './index';
 
 // テスト用商品データ

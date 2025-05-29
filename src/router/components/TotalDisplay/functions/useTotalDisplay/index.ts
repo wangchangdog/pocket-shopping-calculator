@@ -1,9 +1,9 @@
-import { useShoppingContext } from "../../context/ShoppingContext";
-import type { TaxMode } from "../../types";
+import type { TaxMode } from "../../../../../types";
 import {
   calculateSubtotal,
   calculateTotalTax,
-} from "../../utils/calculations";
+} from "../../../../../utils/calculations";
+import { useShoppingContext } from "../../../../context/ShoppingContext";
 
 export interface UseTotalDisplayReturn {
   totalAmount: number;
@@ -30,4 +30,4 @@ export const useTotalDisplay = (): UseTotalDisplayReturn => {
     taxMode,
     taxRate,
   };
-};
+}; 

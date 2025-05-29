@@ -11,14 +11,14 @@
     "preview": "vite preview",
     "format": "biome format --write .",
     "check": "biome check .",
-    "check:fix": "biome check --write .",
     "test": "vitest",
     "test:run": "vitest run"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.7",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
@@ -27,6 +27,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react-swc": "^3.9.0",
     "autoprefixer": "^10.4.21",
     "jsdom": "^26.1.0",

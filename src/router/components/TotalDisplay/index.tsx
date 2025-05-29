@@ -1,15 +1,9 @@
 import type React from "react";
-import { formatPrice } from "../../utils/calculations";
-import type { UseTotalDisplayReturn } from "./useTotalDisplay";
+import { formatPrice } from "../../../utils/calculations";
+import { useTotalDisplay } from "./functions/useTotalDisplay";
 
-interface TotalDisplayFunctionProps {
-  hook: UseTotalDisplayReturn;
-}
-
-export const TotalDisplayFunction: React.FC<TotalDisplayFunctionProps> = ({
-  hook,
-}) => {
-  const { totalAmount, subtotal, taxAmount, itemCount, taxMode, taxRate } = hook;
+export const TotalDisplay: React.FC = () => {
+  const { totalAmount, subtotal, taxAmount, itemCount, taxMode, taxRate } = useTotalDisplay();
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-6">

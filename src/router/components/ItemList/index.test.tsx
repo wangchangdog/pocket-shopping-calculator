@@ -1,9 +1,9 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ItemList } from '.';
+import type { ShoppingItem } from '../../../types';
 import { ShoppingProvider } from '../../context/ShoppingContext';
-import type { ShoppingItem } from '../../types';
-import { ItemList } from './';
 
 // テスト用商品データ
 const mockItems: ShoppingItem[] = [

@@ -1,9 +1,9 @@
 import { renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ShoppingProvider } from '../../context/ShoppingContext';
-import type { ShoppingItem } from '../../types';
-import { useTotalDisplay } from './useTotalDisplay';
+import type { ShoppingItem } from '../../../../../types';
+import { ShoppingProvider } from '../../../../context/ShoppingContext';
+import { useTotalDisplay } from './index';
 
 // テスト用商品データ
 const mockItems: ShoppingItem[] = [
@@ -27,8 +27,8 @@ const mockItems: ShoppingItem[] = [
 const mockUseShoppingContext = vi.fn();
 
 // モック設定
-vi.mock('../../context/ShoppingContext', async () => {
-  const actual = await vi.importActual('../../context/ShoppingContext');
+vi.mock('../../../../context/ShoppingContext', async () => {
+  const actual = await vi.importActual('../../../../context/ShoppingContext');
   return {
     ...actual,
     useShoppingContext: () => mockUseShoppingContext(),

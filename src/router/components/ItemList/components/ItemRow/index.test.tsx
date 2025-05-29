@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { ShoppingItem } from '../../../../types';
+import type { ShoppingItem } from '../../../../../types';
 import { ItemRow } from './index';
 
 // テスト用商品データ
