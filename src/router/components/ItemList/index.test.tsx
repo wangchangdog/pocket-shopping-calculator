@@ -44,7 +44,9 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 describe("ItemList Integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(window, "alert").mockImplementation(() => { });
+    vi.spyOn(window, "alert").mockImplementation(() => {
+      /* no-op */
+    });
     vi.spyOn(window, "confirm").mockImplementation(() => true);
 
     // デフォルトのモック設定
