@@ -19,6 +19,33 @@
 - **画像前処理**: コントラスト向上・グレースケール変換で認識精度向上
 - **カメラ切り替え**: 前面/背面カメラの切り替え対応
 
+## 🌐 デプロイメント
+
+このプロジェクトはGitHub Actionsを使用してGitHub Pagesに自動デプロイされます。
+
+### 自動デプロイメント
+
+- **トリガー**: `main`ブランチへのpush時に自動実行
+- **ビルドプロセス**: 
+  1. 依存関係のインストール
+  2. Lintチェック
+  3. テスト実行
+  4. 本番ビルド
+  5. GitHub Pagesへのデプロイ
+
+### GitHub Pagesの設定
+
+リポジトリ設定でGitHub Pagesを有効にするには：
+
+1. リポジトリの「Settings」タブを開く
+2. 左メニューから「Pages」を選択
+3. Sourceで「GitHub Actions」を選択
+4. ワークフローが完了すると、アプリが `https://username.github.io/pocket-shopping-calculator/` でアクセス可能
+
+### 手動デプロイメント
+
+GitHub Actionsタブから「GitHub Pagesへのデプロイ」ワークフローを手動実行することも可能です。
+
 ## 🛠 技術スタック
 
 - **フレームワーク**: React 18 + TypeScript
