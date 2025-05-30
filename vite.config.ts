@@ -5,6 +5,8 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // GitHub Pagesのパス設定（環境変数またはリポジトリ名に基づく）
+  base: process.env.NODE_ENV === 'production' ? '/pocket-shopping-calculator/' : '/',
   plugins: [react()],
   resolve: {
     alias: {
