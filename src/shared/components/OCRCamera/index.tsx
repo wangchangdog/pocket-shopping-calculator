@@ -204,7 +204,7 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex flex-col overflow-y-scroll">
       {/* ヘッダー */}
       <div className="flex items-center justify-between p-4 bg-gray-900 text-white">
         <h2 className="text-lg font-semibold">価格をスキャン</h2>
@@ -264,94 +264,111 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
 
         {/* OCR結果表示 */}
         {ocrResult && (
-          <div className="flex-1 relative overflow-hidden bg-gray-100">
-            {/* 背景画像 */}
-            {processedImageUrl && (
-              <div
-                className="absolute inset-0 bg-no-repeat opacity-30"
-                style={{
-                  backgroundImage: `url(${processedImageUrl})`,
-                  backgroundSize: 'contain',
-                  backgroundPosition: 'center',
-                }}
-              />
-            )}
+          <div className="flex-1 flex flex-col overflow-scroll bg-gray-100">
+            {/* 結果表示（上部固定） */}
+            <div className="bg-white border-b border-gray-200 p-4 shadow-sm">
+              <h3 className="text-lg font-semibold mb-3 text-center">認識結果</h3>
 
-            {/* 結果表示オーバーレイ */}
-            <div className="relative z-10 flex flex-col justify-center min-h-full p-4">
-              <div className="bg-white bg-opacity-95 p-6 rounded-lg shadow-lg backdrop-blur-sm max-w-md mx-auto w-full">
-                <h3 className="text-lg font-semibold mb-3 text-center">認識結果</h3>
-
-                {ocrResult.detectedPrice ? (
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-green-600">
-                        ¥{ocrResult.detectedPrice.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        信頼度: {ocrResult.confidence.toFixed(1)}%
-                      </div>
+              {ocrResult.detectedPrice ? (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-green-600">
+                      ¥{ocrResult.detectedPrice.toLocaleString()}
                     </div>
-
-                    {ocrResult.suggestions.length > 1 && (
-                      <div className="bg-gray-50 p-3 rounded-lg">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">
-                          その他の候補:
-                        </h4>
-                        <div className="space-y-1">
-                          {ocrResult.suggestions.slice(1).map((suggestion, index) => (
-                            <div key={index} className="text-sm text-gray-600">
-                              {suggestion}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex space-x-3">
-                      <button
-                        onClick={() => handleConfirmPrice(ocrResult.detectedPrice!)}
-                        className="flex-1 bg-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center"
-                      >
-                        <Check size={20} className="mr-2" />
-                        この価格で追加
-                      </button>
-                      <button
-                        onClick={handleRetry}
-                        className="bg-gray-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-600 transition-colors"
-                      >
-                        再撮影
-                      </button>
+                    <div className="text-sm text-gray-500 mt-1">
+                      信頼度: {ocrResult.confidence.toFixed(1)}%
                     </div>
                   </div>
-                ) : (
-                  <div className="text-center space-y-3">
-                    <div className="text-gray-600">価格を認識できませんでした</div>
-                    <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
-                      認識されたテキスト: {ocrResult.recognizedText || 'なし'}
+
+                  {ocrResult.suggestions.length > 1 && (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">
+                        その他の候補:
+                      </h4>
+                      <div className="space-y-1">
+                        {ocrResult.suggestions.slice(1).map((suggestion, index) => (
+                          <div key={index} className="text-sm text-gray-600">
+                            {suggestion}
+                          </div>
+                        ))}
+                      </div>
                     </div>
+                  )}
+
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => handleConfirmPrice(ocrResult.detectedPrice!)}
+                      className="flex-1 bg-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center"
+                    >
+                      <Check size={20} className="mr-2" />
+                      この価格で追加
+                    </button>
                     <button
                       onClick={handleRetry}
-                      className="bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                      className="bg-gray-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-600 transition-colors"
                     >
-                      再試行
+                      再撮影
                     </button>
                   </div>
-                )}
+                </div>
+              ) : (
+                <div className="text-center space-y-3">
+                  <div className="text-gray-600">価格を認識できませんでした</div>
+                  <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+                    認識されたテキスト: {ocrResult.recognizedText || 'なし'}
+                  </div>
+                  <button
+                    onClick={handleRetry}
+                    className="bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                  >
+                    再試行
+                  </button>
+                </div>
+              )}
 
-                {qualityResult && (
-                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">画質詳細</h4>
-                    <div className="text-xs text-gray-600 space-y-1">
-                      <div>スコア: {qualityResult.score}/100</div>
-                      <div>評価: {qualityResult.rating}</div>
-                      {qualityResult.issues.length > 0 && (
-                        <div>問題点: {qualityResult.issues.join(', ')}</div>
-                      )}
+              {qualityResult && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">画質詳細</h4>
+                  <div className="text-xs text-gray-600 space-y-1">
+                    <div>スコア: {qualityResult.score}/100</div>
+                    <div>評価: {qualityResult.rating}</div>
+                    {qualityResult.issues.length > 0 && (
+                      <div>問題点: {qualityResult.issues.join(', ')}</div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 読み込み画像表示（下部スクロール可能） */}
+            <div className="flex-1 overflow-y-auto bg-gray-50">
+              {processedImageUrl ? (
+                <div className="p-4 h-fit overflow-y-scroll">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2 text-center">
+                    読み込み画像
+                  </h4>
+                  <div className="bg-white rounded-lg shadow-sm overflow-auto">
+                    <img
+                      src={processedImageUrl}
+                      alt="読み込まれた画像"
+                      className="w-fit h-auto block"
+                      style={{
+                        maxHeight: 'none', // 画像の実際のサイズで表示
+                        minHeight: '200px', // 最小高さを確保
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-1 flex items-center justify-center p-8">
+                  <div className="text-center text-gray-500">
+                    <div className="text-lg mb-2">画像がありません</div>
+                    <div className="text-sm">
+                      カメラで撮影するか、ファイルを選択してください
                     </div>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         )}
