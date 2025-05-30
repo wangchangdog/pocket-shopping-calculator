@@ -24,6 +24,7 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
   const [error, setError] = useState<string | null>(null);
   const [isOCRInitialized, setIsOCRInitialized] = useState(false);
   const [useAdvancedProcessing, setUseAdvancedProcessing] = useState(true);
+  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
 
   // OCR初期化
   useEffect(() => {
@@ -86,6 +87,10 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
       // 写真を撮影
       const canvas = capturePhoto(videoRef.current, canvasRef.current);
 
+      // 元の画像をDataURLとして保存（背景表示用）
+      const imageUrl = canvas.toDataURL('image/jpeg', 0.8);
+      setProcessedImageUrl(imageUrl);
+
       setCameraState('analyzing');
 
       // 画質評価
@@ -145,6 +150,10 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
       // ファイルをキャンバスに読み込み
       const canvas = await loadImageToCanvas(file, canvasRef.current);
 
+      // 元の画像をDataURLとして保存（背景表示用）
+      const imageUrl = canvas.toDataURL('image/jpeg', 0.8);
+      setProcessedImageUrl(imageUrl);
+
       // 画質評価
       const quality = analyzeImageQuality(canvas);
       setQualityResult(quality);
@@ -177,6 +186,7 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
     handleStopCamera();
     setOcrResult(null);
     setQualityResult(null);
+    setProcessedImageUrl(null);
     setError(null);
     setCameraState('idle');
     onClose();
@@ -186,6 +196,7 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
   const handleRetry = () => {
     setOcrResult(null);
     setQualityResult(null);
+    setProcessedImageUrl(null);
     setError(null);
     setCameraState('idle');
   };
@@ -253,98 +264,131 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
 
         {/* OCR結果表示 */}
         {ocrResult && (
-          <div className="bg-white p-4 m-4 rounded-lg shadow-lg">
-            <h3 className="text-lg font-semibold mb-3">認識結果</h3>
+          <div className="flex-1 relative overflow-hidden bg-gray-100">
+            {/* 背景画像 */}
+            {processedImageUrl && (
+              <div
+                className="absolute inset-0 bg-no-repeat opacity-30"
+                style={{
+                  backgroundImage: `url(${processedImageUrl})`,
+                  backgroundSize: 'contain',
+                  backgroundPosition: 'center',
+                }}
+              />
+            )}
 
-            {ocrResult.detectedPrice ? (
-              <div className="space-y-3">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">
-                    ¥{ocrResult.detectedPrice.toLocaleString()}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    信頼度: {ocrResult.confidence.toFixed(1)}%
-                  </div>
-                </div>
+            {/* 結果表示オーバーレイ */}
+            <div className="relative z-10 flex flex-col justify-center min-h-full p-4">
+              <div className="bg-white bg-opacity-95 p-6 rounded-lg shadow-lg backdrop-blur-sm max-w-md mx-auto w-full">
+                <h3 className="text-lg font-semibold mb-3 text-center">認識結果</h3>
 
-                {ocrResult.suggestions.length > 1 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">
-                      その他の候補:
-                    </h4>
-                    <div className="space-y-1">
-                      {ocrResult.suggestions.slice(1).map((suggestion, index) => (
-                        <div key={index} className="text-sm text-gray-600">
-                          {suggestion}
-                        </div>
-                      ))}
+                {ocrResult.detectedPrice ? (
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-600">
+                        ¥{ocrResult.detectedPrice.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-gray-500 mt-1">
+                        信頼度: {ocrResult.confidence.toFixed(1)}%
+                      </div>
                     </div>
+
+                    {ocrResult.suggestions.length > 1 && (
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">
+                          その他の候補:
+                        </h4>
+                        <div className="space-y-1">
+                          {ocrResult.suggestions.slice(1).map((suggestion, index) => (
+                            <div key={index} className="text-sm text-gray-600">
+                              {suggestion}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => handleConfirmPrice(ocrResult.detectedPrice!)}
+                        className="flex-1 bg-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center"
+                      >
+                        <Check size={20} className="mr-2" />
+                        この価格で追加
+                      </button>
+                      <button
+                        onClick={handleRetry}
+                        className="bg-gray-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-600 transition-colors"
+                      >
+                        再撮影
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center space-y-3">
+                    <div className="text-gray-600">価格を認識できませんでした</div>
+                    <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+                      認識されたテキスト: {ocrResult.recognizedText || 'なし'}
+                    </div>
+                    <button
+                      onClick={handleRetry}
+                      className="bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                    >
+                      再試行
+                    </button>
                   </div>
                 )}
 
-                <div className="flex space-x-3">
-                  <button
-                    onClick={() => handleConfirmPrice(ocrResult.detectedPrice!)}
-                    className="flex-1 bg-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center"
-                  >
-                    <Check size={20} className="mr-2" />
-                    この価格で追加
-                  </button>
-                  <button
-                    onClick={handleRetry}
-                    className="bg-gray-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-600 transition-colors"
-                  >
-                    再撮影
-                  </button>
-                </div>
+                {qualityResult && (
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">画質詳細</h4>
+                    <div className="text-xs text-gray-600 space-y-1">
+                      <div>スコア: {qualityResult.score}/100</div>
+                      <div>評価: {qualityResult.rating}</div>
+                      {qualityResult.issues.length > 0 && (
+                        <div>問題点: {qualityResult.issues.join(', ')}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="text-center space-y-3">
-                <div className="text-gray-600">価格を認識できませんでした</div>
-                <div className="text-sm text-gray-500">
-                  認識されたテキスト: {ocrResult.recognizedText || 'なし'}
-                </div>
-                <button
-                  onClick={handleRetry}
-                  className="bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors"
-                >
-                  再試行
-                </button>
-              </div>
-            )}
-
-            {qualityResult && (
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">画質詳細</h4>
-                <div className="text-xs text-gray-600 space-y-1">
-                  <div>スコア: {qualityResult.score}/100</div>
-                  <div>評価: {qualityResult.rating}</div>
-                  {qualityResult.issues.length > 0 && (
-                    <div>問題点: {qualityResult.issues.join(', ')}</div>
-                  )}
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         )}
 
-        {/* カメラビュー */}
+        {/* カメラビュー / 処理中画面 */}
         {cameraState !== 'idle' && !ocrResult && (
           <div className="flex-1 relative">
-            <video
-              ref={videoRef}
-              className="w-full h-full object-cover"
-              playsInline
-              muted
-            />
+            {/* 処理中で画像がある場合、または画質エラーで画像がある場合は背景として表示 */}
+            {((cameraState === 'analyzing' || cameraState === 'processing') ||
+              (cameraState === 'active' && processedImageUrl && error)) && processedImageUrl ? (
+              <div
+                className="absolute inset-0 bg-no-repeat opacity-40"
+                style={{
+                  backgroundImage: `url(${processedImageUrl})`,
+                  backgroundSize: 'contain',
+                  backgroundPosition: 'center',
+                }}
+              />
+            ) : (
+              /* カメラ映像表示 */
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                playsInline
+                muted
+              />
+            )}
 
-            {/* オーバーレイ */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="border-2 border-white border-dashed w-64 h-40 rounded-lg"></div>
-            </div>
+            {/* オーバーレイ（カメラアクティブ時のみ、エラーがない場合） */}
+            {cameraState === 'active' && !error && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="border-2 border-white border-dashed w-64 h-40 rounded-lg"></div>
+              </div>
+            )}
 
-            {/* 撮影ボタン */}
-            {cameraState === 'active' && (
+            {/* 撮影ボタン（エラーがない場合のみ） */}
+            {cameraState === 'active' && !error && (
               <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
                 <button
                   onClick={handleCapture}
@@ -355,8 +399,8 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
               </div>
             )}
 
-            {/* カメラ切り替えボタン */}
-            {cameraState === 'active' && (
+            {/* カメラ切り替えボタン（エラーがない場合のみ） */}
+            {cameraState === 'active' && !error && (
               <button
                 onClick={handleSwitchCamera}
                 className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-colors"
@@ -365,16 +409,46 @@ export default function OCRCamera({ isOpen, onClose, onPriceDetected }: OCRCamer
               </button>
             )}
 
+            {/* エラー時の再撮影ボタン */}
+            {cameraState === 'active' && error && processedImageUrl && (
+              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                <div className="bg-white bg-opacity-95 rounded-lg p-6 text-center backdrop-blur-sm shadow-lg max-w-sm mx-4">
+                  <div className="text-red-500 mb-4">
+                    <AlertCircle size={48} className="mx-auto mb-2" />
+                    <div className="font-medium">画質が不十分です</div>
+                  </div>
+                  <div className="text-sm text-gray-600 mb-4">
+                    撮影した画像の品質を改善してください
+                  </div>
+                  <button
+                    onClick={() => {
+                      setError(null);
+                      setQualityResult(null);
+                      setProcessedImageUrl(null);
+                    }}
+                    className="bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                  >
+                    再撮影
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* 処理中表示 */}
-            {(cameraState === 'capturing' || cameraState === 'analyzing' || cameraState === 'processing') && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <div className="bg-white rounded-lg p-6 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-3"></div>
-                  <div className="text-gray-700">
+            {(cameraState === 'capturing' || cameraState === 'analyzing' || cameraState === 'processing') && !error && (
+              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                <div className="bg-white bg-opacity-95 rounded-lg p-6 text-center backdrop-blur-sm shadow-lg">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                  <div className="text-gray-700 font-medium">
                     {cameraState === 'capturing' && '撮影中...'}
                     {cameraState === 'analyzing' && '画質を分析中...'}
                     {cameraState === 'processing' && '価格を認識中...'}
                   </div>
+                  {(cameraState === 'analyzing' || cameraState === 'processing') && (
+                    <div className="text-sm text-gray-500 mt-2">
+                      撮影した画像を処理しています
+                    </div>
+                  )}
                 </div>
               </div>
             )}
