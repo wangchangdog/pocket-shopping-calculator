@@ -1,31 +1,36 @@
-import { ShoppingProvider } from "@/context/ShoppingContext";
 import { act, renderHook } from "@testing-library/react";
-import type React from "react";
 import type { ReactNode } from "react";
+import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ShoppingProvider } from "../../../../../shared/components/context/ShoppingContext";
 import { useAddItemForm } from "./index";
 
 // ShoppingContextのモック
 const mockDispatch = vi.fn();
 
-vi.mock("@/context/ShoppingContext", async () => {
-  const actual = await vi.importActual("@/context/ShoppingContext");
-  return {
-    ...actual,
-    useShoppingContext: () => ({
-      dispatch: mockDispatch,
-      session: {
-        sessionId: "test-session",
-        taxMode: "included" as const,
-        taxRate: 0.1,
-        items: [],
-        totalAmount: 0,
-        createdAt: "2024-01-01T00:00:00.000Z",
-        updatedAt: "2024-01-01T00:00:00.000Z",
-      },
-    }),
-  };
-});
+vi.mock(
+  "../../../../../shared/components/context/ShoppingContext",
+  async () => {
+    const actual = await vi.importActual(
+      "../../../../../shared/components/context/ShoppingContext"
+    );
+    return {
+      ...actual,
+      useShoppingContext: () => ({
+        dispatch: mockDispatch,
+        session: {
+          sessionId: "test-session",
+          taxMode: "included" as const,
+          taxRate: 0.1,
+          items: [],
+          totalAmount: 0,
+          createdAt: "2024-01-01T00:00:00.000Z",
+          updatedAt: "2024-01-01T00:00:00.000Z",
+        },
+      }),
+    };
+  }
+);
 
 // テスト用のWrapper
 const wrapper = ({ children }: { children: ReactNode }) => (

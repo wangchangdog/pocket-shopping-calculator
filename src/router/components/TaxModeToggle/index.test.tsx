@@ -1,7 +1,7 @@
-import { ShoppingProvider } from "@/context/ShoppingContext";
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ShoppingProvider } from "../../../shared/components/context/ShoppingContext";
 import { TaxModeToggle } from "./index";
 
 // モック関数
@@ -9,8 +9,10 @@ const mockDispatch = vi.fn();
 const mockUseShoppingContext = vi.fn();
 
 // モック設定
-vi.mock("@/context/ShoppingContext", async () => {
-  const actual = await vi.importActual("@/context/ShoppingContext");
+vi.mock("../../../shared/components/context/ShoppingContext", async () => {
+  const actual = await vi.importActual(
+    "../../../shared/components/context/ShoppingContext"
+  );
   return {
     ...actual,
     useShoppingContext: () => mockUseShoppingContext(),

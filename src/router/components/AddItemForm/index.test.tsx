@@ -1,14 +1,16 @@
-import { ShoppingProvider } from "@/shared/components/context/ShoppingContext";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ShoppingProvider } from "../../../shared/components/context/ShoppingContext";
 import { AddItemForm } from "./index";
 
 // ShoppingContextのモック
 const mockDispatch = vi.fn();
 
-vi.mock("@/context/ShoppingContext", async () => {
-  const actual = await vi.importActual("@/context/ShoppingContext");
+vi.mock("../../../shared/components/context/ShoppingContext", async () => {
+  const actual = await vi.importActual(
+    "../../../shared/components/context/ShoppingContext"
+  );
   return {
     ...actual,
     useShoppingContext: () => ({
