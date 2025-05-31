@@ -43,7 +43,7 @@ export async function initializeOCR(
       config.engineMode as number,
       {
         logger: (_m) => {
-          if (process.env.NODE_ENV === "development") {
+          if (import.meta.env.DEV) {
             // OCR初期化ログはデバッグ時のみ出力
           }
         },
