@@ -1,15 +1,15 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "./router/components/Layout";
 import { HomePage } from "./router/index";
-import { ShoppingProvider } from "./shared/components/context/ShoppingContext";
 import { ErrorBoundary } from "./shared/components/ErrorBoundary";
+import { ShoppingProvider } from "./shared/components/context/ShoppingContext";
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 
 // GitHub Pagesのbase URLを設定
-const basename = import.meta.env.PROD ? '/pocket-shopping-calculator' : '';
+const basename = import.meta.env.PROD ? "/pocket-shopping-calculator" : "";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
