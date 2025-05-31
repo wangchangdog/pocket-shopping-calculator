@@ -25,6 +25,7 @@ const mockItems: ShoppingItem[] = [
 
 // モック関数
 const mockDispatch = vi.fn();
+const mockUseShoppingContext = vi.fn();
 
 vi.mock(
   "../../../../../shared/components/context/ShoppingContext",
@@ -34,18 +35,7 @@ vi.mock(
     );
     return {
       ...actual,
-      useShoppingContext: () => ({
-        dispatch: mockDispatch,
-        session: {
-          items: [],
-          taxMode: "included",
-          taxRate: 10,
-          totalAmount: 0,
-          sessionId: "test-session",
-          createdAt: "2024-01-01T00:00:00.000Z",
-          updatedAt: "2024-01-01T00:00:00.000Z",
-        },
-      }),
+      useShoppingContext: () => mockUseShoppingContext(),
     };
   }
 );
@@ -60,7 +50,7 @@ describe("useItemList", () => {
     vi.clearAllMocks();
 
     // デフォルトのモック設定
-    mockDispatch.mockReturnValue({
+    mockUseShoppingContext.mockReturnValue({
       dispatch: mockDispatch,
       session: {
         items: mockItems,
@@ -107,7 +97,7 @@ describe("useItemList", () => {
 
   it("商品が空の場合は全削除処理を実行しない", () => {
     // 空の商品リスト用のモック
-    mockDispatch.mockReturnValue({
+    mockUseShoppingContext.mockReturnValue({
       dispatch: mockDispatch,
       session: {
         items: [],
