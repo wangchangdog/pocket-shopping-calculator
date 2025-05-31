@@ -1,5 +1,8 @@
 import { useShoppingContext } from "../../../../../shared/components/context/ShoppingContext";
-import { calculateSubtotal, calculateTotalTax } from "../../../../../shared/utils/calculations";
+import {
+  calculateSubtotal,
+  calculateTotalTax,
+} from "../../../../../shared/utils/calculations";
 import type { ShoppingItem, TaxMode } from "../../../../../types";
 
 export interface UseTotalDisplayReturn {

@@ -1,18 +1,17 @@
 import type React from "react";
 import type { ReactNode } from "react";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useReducer,
-} from "react";
-import type { ShoppingAction, ShoppingItem, ShoppingSession } from "../../../types";
+import { createContext, useContext, useEffect, useReducer } from "react";
+import type {
+  ShoppingAction,
+  ShoppingItem,
+  ShoppingSession,
+} from "../../../types";
 import { calculateTotal } from "../../utils/calculations";
 import {
   createDefaultSession,
   loadSession,
   loadSettings,
-  saveSession
+  saveSession,
 } from "../../utils/storage";
 
 interface ShoppingContextType {

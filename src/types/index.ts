@@ -58,7 +58,7 @@ export interface OCRProcessResult {
 }
 
 export interface CameraSettings {
-  facingMode: 'user' | 'environment';
+  facingMode: "user" | "environment";
   width: number;
   height: number;
 }

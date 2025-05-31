@@ -1,10 +1,10 @@
-import type { CameraSettings } from '../../types';
+import type { CameraSettings } from "../../types";
 
 /**
  * デフォルトのカメラ設定
  */
 const DEFAULT_CAMERA_SETTINGS: CameraSettings = {
-  facingMode: 'environment', // 背面カメラ（値札撮影用）
+  facingMode: "environment", // 背面カメラ（値札撮影用）
   width: 1280,
   height: 720,
 };
@@ -18,7 +18,7 @@ let currentStream: MediaStream | null = null;
  * カメラが利用可能かチェック
  */
 export function isCameraAvailable(): boolean {
-  return !!(navigator.mediaDevices?.getUserMedia);
+  return !!navigator.mediaDevices?.getUserMedia;
 }
 
 /**
@@ -29,7 +29,7 @@ export async function startCamera(
   settings: Partial<CameraSettings> = {}
 ): Promise<MediaStream> {
   if (!isCameraAvailable()) {
-    throw new Error('カメラが利用できません');
+    throw new Error("カメラが利用できません");
   }
 
   const config = { ...DEFAULT_CAMERA_SETTINGS, ...settings };
@@ -54,12 +54,13 @@ export async function startCamera(
 
     return new Promise((resolve, reject) => {
       videoElement.onloadedmetadata = () => {
-        videoElement.play()
+        videoElement
+          .play()
           .then(() => {
             if (currentStream) {
               resolve(currentStream);
             } else {
-              reject(new Error('Stream is null'));
+              reject(new Error("Stream is null"));
             }
           })
           .catch(reject);
@@ -67,8 +68,8 @@ export async function startCamera(
       videoElement.onerror = reject;
     });
   } catch (error) {
-    console.error('Camera start failed:', error);
-    throw new Error('カメラの起動に失敗しました');
+    console.error("Camera start failed:", error);
+    throw new Error("カメラの起動に失敗しました");
   }
 }
 
@@ -91,9 +92,9 @@ export function capturePhoto(
   videoElement: HTMLVideoElement,
   canvasElement: HTMLCanvasElement
 ): HTMLCanvasElement {
-  const ctx = canvasElement.getContext('2d');
+  const ctx = canvasElement.getContext("2d");
   if (!ctx) {
-    throw new Error('Canvas context not available');
+    throw new Error("Canvas context not available");
   }
 
   // ビデオの実際のサイズを取得
@@ -120,9 +121,9 @@ export async function getAvailableCameras(): Promise<MediaDeviceInfo[]> {
 
   try {
     const devices = await navigator.mediaDevices.enumerateDevices();
-    return devices.filter(device => device.kind === 'videoinput');
+    return devices.filter((device) => device.kind === "videoinput");
   } catch (error) {
-    console.error('Failed to enumerate cameras:', error);
+    console.error("Failed to enumerate cameras:", error);
     return [];
   }
 }
@@ -132,7 +133,7 @@ export async function getAvailableCameras(): Promise<MediaDeviceInfo[]> {
  */
 export function switchCamera(
   videoElement: HTMLVideoElement,
-  facingMode: 'user' | 'environment'
+  facingMode: "user" | "environment"
 ): Promise<MediaStream> {
   return startCamera(videoElement, { facingMode });
 }
@@ -148,14 +149,14 @@ export function loadImageToCanvas(
 ): Promise<HTMLCanvasElement> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
+
     reader.onload = (e) => {
       const img = new Image();
-      
+
       img.onload = () => {
-        const ctx = canvasElement.getContext('2d');
+        const ctx = canvasElement.getContext("2d");
         if (!ctx) {
-          reject(new Error('Canvas context not available'));
+          reject(new Error("Canvas context not available"));
           return;
         }
 
@@ -164,12 +165,8 @@ export function loadImageToCanvas(
 
         // 最大サイズを超える場合はリサイズ
         if (width > maxWidth || height > maxHeight) {
-          const { width: newWidth, height: newHeight } = calculateResizedDimensions(
-            width,
-            height,
-            maxWidth,
-            maxHeight
-          );
+          const { width: newWidth, height: newHeight } =
+            calculateResizedDimensions(width, height, maxWidth, maxHeight);
           width = newWidth;
           height = newHeight;
         }
@@ -183,11 +180,12 @@ export function loadImageToCanvas(
         resolve(canvasElement);
       };
 
-      img.onerror = () => reject(new Error('画像の読み込みに失敗しました'));
+      img.onerror = () => reject(new Error("画像の読み込みに失敗しました"));
       img.src = e.target?.result as string;
     };
 
-    reader.onerror = () => reject(new Error('ファイルの読み込みに失敗しました'));
+    reader.onerror = () =>
+      reject(new Error("ファイルの読み込みに失敗しました"));
     reader.readAsDataURL(file);
   });
 }
@@ -197,7 +195,7 @@ export function loadImageToCanvas(
  */
 export function canvasToDataURL(
   canvasElement: HTMLCanvasElement,
-  format = 'image/jpeg',
+  format = "image/jpeg",
   quality = 0.8
 ): string {
   return canvasElement.toDataURL(format, quality);
@@ -212,13 +210,13 @@ export function resizeImage(
   maxWidth = 800,
   maxHeight = 600
 ): HTMLCanvasElement {
-  const ctx = targetCanvas.getContext('2d');
+  const ctx = targetCanvas.getContext("2d");
   if (!ctx) {
-    throw new Error('Canvas context not available');
+    throw new Error("Canvas context not available");
   }
 
   const { width: originalWidth, height: originalHeight } = sourceCanvas;
-  
+
   // アスペクト比を保持してリサイズ
   const { width, height } = calculateResizedDimensions(
     originalWidth,
@@ -231,8 +229,18 @@ export function resizeImage(
   targetCanvas.height = height;
 
   // リサイズして描画
-  ctx.drawImage(sourceCanvas, 0, 0, originalWidth, originalHeight, 0, 0, width, height);
-  
+  ctx.drawImage(
+    sourceCanvas,
+    0,
+    0,
+    originalWidth,
+    originalHeight,
+    0,
+    0,
+    width,
+    height
+  );
+
   return targetCanvas;
 }
 
@@ -261,4 +269,4 @@ function calculateResizedDimensions(
   }
 
   return { width: Math.round(width), height: Math.round(height) };
-} 
+}
