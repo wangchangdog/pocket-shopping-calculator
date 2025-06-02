@@ -19,6 +19,7 @@ async function generateIconsFromImage(imagePath) {
     const image = await loadImage(imagePath);
     
     const iconsDir = path.join(__dirname, '../public/icons');
+    fs.mkdirSync(iconsDir, { recursive: true });
     
     for (const size of sizes) {
       const canvas = createCanvas(size, size);
