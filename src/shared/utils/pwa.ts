@@ -86,13 +86,14 @@ export const createUpdateNotification = (updateSW: () => Promise<void>) => {
   document.body.appendChild(notification);
   
   // 30秒後に自動で非表示
-  setTimeout(() => {
+  const timeoutId = setTimeout(() => {
     if (document.body.contains(notification)) {
       document.body.removeChild(notification);
     }
   }, 30000);
   
   return () => {
+    clearTimeout(timeoutId);
     if (document.body.contains(notification)) {
       document.body.removeChild(notification);
     }
