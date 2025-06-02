@@ -82,6 +82,7 @@ function drawIcon(canvas, size) {
 console.log('PNG アイコンを生成中...');
 
 const iconsDir = path.join(__dirname, '../public/icons');
+fs.mkdirSync(iconsDir, { recursive: true });
 
 // 各サイズのPNGアイコンを生成
 sizes.forEach(size => {
