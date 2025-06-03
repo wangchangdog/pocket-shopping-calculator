@@ -1,4 +1,3 @@
-import { useRegisterSW } from "virtual:pwa-register/react";
 import {
   type PWAUpdateInfo,
   createOfflineListener,
@@ -11,6 +10,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useRegisterSW } from "virtual:pwa-register/react";
 
 interface PWAContextValue extends PWAUpdateInfo {
   isOnline: boolean;
