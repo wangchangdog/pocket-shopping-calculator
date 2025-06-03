@@ -1,6 +1,16 @@
-import { createOfflineListener, createUpdateNotification, type PWAUpdateInfo } from '@/shared/utils/pwa';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { useRegisterSW } from 'virtual:pwa-register/react';
+import { useRegisterSW } from "virtual:pwa-register/react";
+import {
+  type PWAUpdateInfo,
+  createOfflineListener,
+  createUpdateNotification,
+} from "@/shared/utils/pwa";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface PWAContextValue extends PWAUpdateInfo {
   isOnline: boolean;
@@ -23,18 +33,18 @@ export const PWAProvider = ({ children }: PWAProviderProps) => {
     needRefresh: [needRefresh, setNeedRefresh],
     offlineReady: [offlineReady, setOfflineReady],
   } = useRegisterSW({
-    onRegistered(r: any) {
-      console.log('Service Worker が登録されました:', r);
+    onRegistered(r: ServiceWorkerRegistration | undefined) {
+      console.info("Service Worker が登録されました:", r);
     },
-    onRegisterError(error: any) {
-      console.error('Service Worker の登録に失敗しました:', error);
+    onRegisterError(error: Error) {
+      console.error("Service Worker の登録に失敗しました:", error);
     },
     onNeedRefresh() {
-      console.log('新しいコンテンツが利用可能です');
+      console.info("新しいコンテンツが利用可能です");
       setShowUpdatePrompt(true);
     },
     onOfflineReady() {
-      console.log('アプリをオフラインで使用する準備ができました');
+      console.info("アプリをオフラインで使用する準備ができました");
       setOfflineReady(true);
     },
   });
@@ -65,7 +75,7 @@ export const PWAProvider = ({ children }: PWAProviderProps) => {
       setNeedRefresh(false);
       setShowUpdatePrompt(false);
     } catch (error) {
-      console.error('Service Worker の更新に失敗しました:', error);
+      console.error("Service Worker の更新に失敗しました:", error);
     }
   };
 
@@ -82,15 +92,17 @@ export const PWAProvider = ({ children }: PWAProviderProps) => {
     dismissUpdatePrompt,
   };
 
-  return <PWAContext.Provider value={contextValue}>{children}</PWAContext.Provider>;
+  return (
+    <PWAContext.Provider value={contextValue}>{children}</PWAContext.Provider>
+  );
 };
 
 export const usePWA = (): PWAContextValue => {
   const context = useContext(PWAContext);
   if (!context) {
-    throw new Error('usePWA must be used within a PWAProvider');
+    throw new Error("usePWA must be used within a PWAProvider");
   }
   return context;
 };
 
-export default PWAProvider; 
+export default PWAProvider;

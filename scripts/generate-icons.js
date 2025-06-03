@@ -1,9 +1,9 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const Filename = fileURLToPath(import.meta.url);
+const Dirname = path.dirname(Filename);
 
 // SVGアイコンのベーステンプレート（買い物計算機のアイコン）
 const iconSvg = `
@@ -55,29 +55,31 @@ const iconSvg = `
 // アイコンサイズ
 const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
 
-console.log('PWA用アイコンを生成中...');
+console.info("PWA用アイコンを生成中...");
 
 // publicディレクトリにSVGファイルとして保存
-const publicDir = path.join(__dirname, '../public');
-const iconsDir = path.join(publicDir, 'icons');
+const publicDir = path.join(Dirname, "../public");
+const iconsDir = path.join(publicDir, "icons");
 
 // SVGファイルを保存
-fs.writeFileSync(path.join(iconsDir, 'icon.svg'), iconSvg.trim());
+fs.writeFileSync(path.join(iconsDir, "icon.svg"), iconSvg.trim());
 
 // 各サイズ用のプレースホルダーファイルを作成
-sizes.forEach(size => {
+for (const size of sizes) {
   const filename = `icon-${size}x${size}.png`;
   const filePath = path.join(iconsDir, filename);
-  
+
   // プレースホルダーファイル作成（実際の画像変換は別途必要）
   const placeholder = `<!-- ${size}x${size} PWA Icon Placeholder -->
 <!-- 本番環境では実際のPNG画像に置き換えてください -->
 <!-- SVGからPNG変換: https://cloudconvert.com/svg-to-png -->`;
-  
-  fs.writeFileSync(filePath.replace('.png', '.placeholder'), placeholder);
-  console.log(`アイコンプレースホルダーを作成: ${filename}`);
-});
 
-console.log('アイコン生成完了！');
-console.log('SVGファイル: public/icons/icon.svg');
-console.log('注意: PNGファイルは手動で作成するか、オンライン変換ツールを使用してください'); 
+  fs.writeFileSync(filePath.replace(".png", ".placeholder"), placeholder);
+  console.info(`アイコンプレースホルダーを作成: ${filename}`);
+}
+
+console.info("アイコン生成完了！");
+console.info("SVGファイル: public/icons/icon.svg");
+console.info(
+  "注意: PNGファイルは手動で作成するか、オンライン変換ツールを使用してください"
+);

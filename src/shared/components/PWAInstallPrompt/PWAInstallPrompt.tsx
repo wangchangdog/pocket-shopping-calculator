@@ -1,28 +1,29 @@
-import { Download, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Download, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
   readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
+    outcome: "accepted" | "dismissed";
     platform: string;
   }>;
   prompt(): Promise<void>;
 }
 
 const PWAInstallPrompt = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
     // すでにPWAとしてインストールされているかチェック
     const checkInstalled = () => {
-      if (window.matchMedia('(display-mode: standalone)').matches) {
+      if (window.matchMedia("(display-mode: standalone)").matches) {
         setIsInstalled(true);
         return true;
       }
-      if ((window.navigator as any).standalone === true) {
+      if ((window.navigator as { standalone?: boolean }).standalone === true) {
         setIsInstalled(true);
         return true;
       }
@@ -51,32 +52,37 @@ const PWAInstallPrompt = () => {
       setDeferredPrompt(null);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
+      window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      return;
+    }
 
     try {
       await deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
 
-      if (outcome === 'accepted') {
-        console.log('PWAインストールが承認されました');
+      if (outcome === "accepted") {
+        console.info("PWAインストールが承認されました");
       } else {
-        console.log('PWAインストールが拒否されました');
+        console.info("PWAインストールが拒否されました");
       }
 
       setDeferredPrompt(null);
       setShowPrompt(false);
     } catch (error) {
-      console.error('PWAインストールエラー:', error);
+      console.error("PWAインストールエラー:", error);
     }
   };
 
@@ -85,14 +91,14 @@ const PWAInstallPrompt = () => {
 
     // 24時間後に再度表示できるようにローカルストレージに記録
     const dismissTime = Date.now();
-    localStorage.setItem('pwa-prompt-dismissed', dismissTime.toString());
+    localStorage.setItem("pwa-prompt-dismissed", dismissTime.toString());
   };
 
   // 24時間以内に拒否された場合は表示しない
   useEffect(() => {
-    const dismissedTime = localStorage.getItem('pwa-prompt-dismissed');
+    const dismissedTime = localStorage.getItem("pwa-prompt-dismissed");
     if (dismissedTime) {
-      const timeDiff = Date.now() - parseInt(dismissedTime);
+      const timeDiff = Date.now() - Number.parseInt(dismissedTime);
       const twentyFourHours = 24 * 60 * 60 * 1000;
 
       if (timeDiff < twentyFourHours) {
@@ -127,6 +133,7 @@ const PWAInstallPrompt = () => {
             </div>
           </div>
           <button
+            type="button"
             onClick={handleDismiss}
             className="flex-shrink-0 ml-2 p-1 text-gray-400 hover:text-gray-600"
           >
@@ -136,12 +143,14 @@ const PWAInstallPrompt = () => {
 
         <div className="mt-3 flex space-x-2">
           <button
+            type="button"
             onClick={handleInstallClick}
             className="flex-1 bg-blue-500 text-white text-sm font-medium py-2 px-3 rounded-md hover:bg-blue-600 transition-colors"
           >
             インストール
           </button>
           <button
+            type="button"
             onClick={handleDismiss}
             className="flex-1 bg-gray-100 text-gray-700 text-sm font-medium py-2 px-3 rounded-md hover:bg-gray-200 transition-colors"
           >
@@ -153,4 +162,4 @@ const PWAInstallPrompt = () => {
   );
 };
 
-export default PWAInstallPrompt; 
+export default PWAInstallPrompt;

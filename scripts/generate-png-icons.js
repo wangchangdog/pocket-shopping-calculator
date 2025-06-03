@@ -1,57 +1,67 @@
-import { createCanvas } from 'canvas';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { createCanvas } from "canvas";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const Filename = fileURLToPath(import.meta.url);
+const Dirname = path.dirname(Filename);
 
 // アイコンサイズ
 const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
 
 // アイコンの基本デザインをCanvasで描画
 function drawIcon(canvas, size) {
-  const ctx = canvas.getContext('2d');
-  
+  const ctx = canvas.getContext("2d");
+
   // 背景グラデーション（緑系に変更）
   const gradient = ctx.createLinearGradient(0, 0, size, size);
-  gradient.addColorStop(0, '#10b981'); // エメラルドグリーン
-  gradient.addColorStop(1, '#059669'); // 濃いグリーン
-  
+  gradient.addColorStop(0, "#10b981"); // エメラルドグリーン
+  gradient.addColorStop(1, "#059669"); // 濃いグリーン
+
   // 背景
   ctx.fillStyle = gradient;
   ctx.roundRect(0, 0, size, size, size * 0.2);
   ctx.fill();
-  
+
   // 電卓本体
   const padding = size * 0.2;
   const calcSize = size - padding * 2;
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+  ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
   ctx.roundRect(padding, padding, calcSize, calcSize, size * 0.05);
   ctx.fill();
-  
+
   // 画面
   const screenPadding = size * 0.25;
   const screenWidth = size * 0.5;
   const screenHeight = size * 0.125;
-  ctx.fillStyle = '#1f2937';
-  ctx.roundRect(screenPadding, screenPadding, screenWidth, screenHeight, size * 0.015);
+  ctx.fillStyle = "#1f2937";
+  ctx.roundRect(
+    screenPadding,
+    screenPadding,
+    screenWidth,
+    screenHeight,
+    size * 0.015
+  );
   ctx.fill();
-  
+
   // 画面の数字（色を変更）
-  ctx.fillStyle = '#fbbf24'; // 黄色に変更
+  ctx.fillStyle = "#fbbf24"; // 黄色に変更
   ctx.font = `bold ${size * 0.06}px Arial`;
-  ctx.textAlign = 'right';
-  ctx.fillText('¥1,280', screenPadding + screenWidth - size * 0.02, screenPadding + screenHeight * 0.7);
-  
+  ctx.textAlign = "right";
+  ctx.fillText(
+    "¥1,280",
+    screenPadding + screenWidth - size * 0.02,
+    screenPadding + screenHeight * 0.7
+  );
+
   // ボタン配置（簡略化）
   const buttonSize = size * 0.04;
   const buttonSpacing = size * 0.13;
   const startX = size * 0.3;
   const startY = size * 0.45;
-  
+
   // 電卓ボタン（色を変更）
-  ctx.fillStyle = '#d1fae5'; // 薄いグリーン
+  ctx.fillStyle = "#d1fae5"; // 薄いグリーン
   for (let row = 0; row < 3; row++) {
     for (let col = 0; col < 3; col++) {
       const x = startX + col * buttonSpacing;
@@ -61,39 +71,45 @@ function drawIcon(canvas, size) {
       ctx.fill();
     }
   }
-  
+
   // カメラアイコン（OCR機能を表現）
   const cameraX = size * 0.4;
   const cameraY = size * 0.62;
   const cameraW = size * 0.065;
   const cameraH = size * 0.048;
-  
-  ctx.fillStyle = 'rgba(16, 185, 129, 0.8)'; // グリーン系に変更
+
+  ctx.fillStyle = "rgba(16, 185, 129, 0.8)"; // グリーン系に変更
   ctx.roundRect(cameraX, cameraY, cameraW, cameraH, size * 0.008);
   ctx.fill();
-  
+
   // カメラレンズ
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = "#ffffff";
   ctx.beginPath();
-  ctx.arc(cameraX + cameraW/2, cameraY + cameraH/2, size * 0.012, 0, 2 * Math.PI);
+  ctx.arc(
+    cameraX + cameraW / 2,
+    cameraY + cameraH / 2,
+    size * 0.012,
+    0,
+    2 * Math.PI
+  );
   ctx.fill();
 }
 
-console.log('PNG アイコンを生成中...');
+console.info("PNG アイコンを生成中...");
 
-const iconsDir = path.join(__dirname, '../public/icons');
+const iconsDir = path.join(Dirname, "../public/icons");
 fs.mkdirSync(iconsDir, { recursive: true });
 
 // 各サイズのPNGアイコンを生成
-sizes.forEach(size => {
+for (const size of sizes) {
   const canvas = createCanvas(size, size);
   drawIcon(canvas, size);
-  
-  const filename = `icon-${size}x${size}.png`;
-  const buffer = canvas.toBuffer('image/png');
-  
-  fs.writeFileSync(path.join(iconsDir, filename), buffer);
-  console.log(`✓ ${filename} を生成しました`);
-});
 
-console.log('PNG アイコン生成完了！'); 
+  const filename = `icon-${size}x${size}.png`;
+  const buffer = canvas.toBuffer("image/png");
+
+  fs.writeFileSync(path.join(iconsDir, filename), buffer);
+  console.info(`✓ ${filename} を生成しました`);
+}
+
+console.info("PNG アイコン生成完了！");

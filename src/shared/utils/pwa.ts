@@ -12,7 +12,7 @@ export interface PWAUpdateInfo {
  * Service Workerの登録状態をチェック
  */
 export const isServiceWorkerSupported = (): boolean => {
-  return 'serviceWorker' in navigator;
+  return "serviceWorker" in navigator;
 };
 
 /**
@@ -20,40 +20,45 @@ export const isServiceWorkerSupported = (): boolean => {
  */
 export const isPWAInstalled = (): boolean => {
   // Standalone mode (Android Chrome, Edge)
-  if (window.matchMedia('(display-mode: standalone)').matches) {
+  if (window.matchMedia("(display-mode: standalone)").matches) {
     return true;
   }
-  
+
   // iOS Safari
-  if ((window.navigator as any).standalone === true) {
+  if ((window.navigator as { standalone?: boolean }).standalone === true) {
     return true;
   }
-  
+
   return false;
 };
 
 /**
  * デバイスタイプを判定
  */
-export const getDeviceType = (): 'mobile' | 'desktop' => {
+export const getDeviceType = (): "mobile" | "desktop" => {
   const userAgent = navigator.userAgent.toLowerCase();
-  const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-  return isMobile ? 'mobile' : 'desktop';
+  const isMobile =
+    /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+      userAgent
+    );
+  return isMobile ? "mobile" : "desktop";
 };
 
 /**
  * オフライン状態を監視するフック用ヘルパー
  */
-export const createOfflineListener = (callback: (isOnline: boolean) => void) => {
+export const createOfflineListener = (
+  callback: (isOnline: boolean) => void
+) => {
   const handleOnline = () => callback(true);
   const handleOffline = () => callback(false);
-  
-  window.addEventListener('online', handleOnline);
-  window.addEventListener('offline', handleOffline);
-  
+
+  window.addEventListener("online", handleOnline);
+  window.addEventListener("offline", handleOffline);
+
   return () => {
-    window.removeEventListener('online', handleOnline);
-    window.removeEventListener('offline', handleOffline);
+    window.removeEventListener("online", handleOnline);
+    window.removeEventListener("offline", handleOffline);
   };
 };
 
@@ -61,8 +66,8 @@ export const createOfflineListener = (callback: (isOnline: boolean) => void) => 
  * PWA更新通知を表示するためのヘルパー
  */
 export const createUpdateNotification = (updateSW: () => Promise<void>) => {
-  const notification = document.createElement('div');
-  notification.className = 'fixed top-4 left-4 right-4 z-50 mx-auto max-w-sm';
+  const notification = document.createElement("div");
+  notification.className = "fixed top-4 left-4 right-4 z-50 mx-auto max-w-sm";
   notification.innerHTML = `
     <div class="bg-blue-500 text-white p-4 rounded-lg shadow-lg">
       <div class="flex items-center justify-between">
@@ -76,22 +81,22 @@ export const createUpdateNotification = (updateSW: () => Promise<void>) => {
       </div>
     </div>
   `;
-  
-  const updateBtn = notification.querySelector('#update-btn');
-  updateBtn?.addEventListener('click', async () => {
+
+  const updateBtn = notification.querySelector("#update-btn");
+  updateBtn?.addEventListener("click", async () => {
     await updateSW();
     document.body.removeChild(notification);
   });
-  
+
   document.body.appendChild(notification);
-  
+
   // 30秒後に自動で非表示
   const timeoutId = setTimeout(() => {
     if (document.body.contains(notification)) {
       document.body.removeChild(notification);
     }
   }, 30000);
-  
+
   return () => {
     clearTimeout(timeoutId);
     if (document.body.contains(notification)) {
@@ -110,6 +115,6 @@ export const getPWAAnalytics = () => {
     isOnline: navigator.onLine,
     userAgent: navigator.userAgent,
     referrer: document.referrer,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
-}; 
+};
